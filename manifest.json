@@ -1,0 +1,15 @@
+{
+    "name": "annotate.semphris",
+    "description": "View and annotate your PDF files",
+    "architecture": "@CLICK_ARCH@",
+    "title": "Annotate",
+    "hooks": {
+        "annotate": {
+            "apparmor": "annotate.apparmor",
+            "desktop":  "annotate.desktop"
+        }
+    },
+    "version": "0.0.1",
+    "maintainer": "Semphris <semphris@protonmail.com>",
+    "framework" : "@CLICK_FRAMEWORK@"
+}

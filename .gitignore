@@ -1,0 +1,4 @@
+build/
+.clickable
+*.tmp
+*.tmp/
