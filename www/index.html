@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8" />
     <title>Annotate</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       html, body {
         background-color: #333843;
@@ -15,6 +14,7 @@
         display: block;
         box-shadow: 0 4px 10px black;
         margin: 15px;
+        width: calc(100% - 30px);
       }
 
       #loadfile {
@@ -98,8 +98,6 @@
 
       var pdfjsLib = window['pdfjs-dist/build/pdf'];
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.js';
-
-      console.log(external);
 
       const pagesContainer = document.getElementById('pages');
       const loadfile = document.getElementById('loadfile');
@@ -196,6 +194,11 @@
           this.oldX = x - page.canvas.offsetLeft;
           this.oldY = y - page.canvas.offsetTop;
 
+          const point = {
+            x: this.oldX / page.canvas.width * window.devicePixelRatio,
+            y: this.oldY / page.canvas.height * window.devicePixelRatio
+          };
+
           var size = this.size;
           if (this.sizeRelativeToScreen) {
             size /= page.canvas.width;
@@ -203,9 +206,8 @@
             size /= 1920;
           }
 
-          this.currentStroke = new StrokeElement(this.oldX / page.canvas.width,
-                                                 this.oldY / page.canvas.height,
-                                                 this.color, size, true);
+          this.currentStroke = new StrokeElement(point.x, point.y, this.color,
+                                                 size, true);
           this.currentStroke.page = page;
           page.elements.push(this.currentStroke);
           page.redraw();
@@ -229,8 +231,8 @@
           this.oldY = y - page.canvas.offsetTop;
 
           page.elements[page.elements.length - 1].points.push({
-            x: this.oldX / page.canvas.width,
-            y: this.oldY / page.canvas.height
+            x: this.oldX / page.canvas.width * window.devicePixelRatio,
+            y: this.oldY / page.canvas.height * window.devicePixelRatio
           });
 
           page.redraw();
@@ -279,8 +281,8 @@
           this.oldY = y - page.canvas.offsetTop;
 
           const point = {
-            x: this.oldX / page.canvas.width,
-            y: this.oldY / page.canvas.height
+            x: this.oldX / page.canvas.width * window.devicePixelRatio,
+            y: this.oldY / page.canvas.height * window.devicePixelRatio
           };
 
           var size = this.size;
@@ -290,9 +292,8 @@
             size /= 1920;
           }
 
-          this.currentStroke = new StrokeElement(this.oldX / page.canvas.width,
-                                                 this.oldY / page.canvas.height,
-                                                 '#fff', size, true);
+          this.currentStroke = new StrokeElement(point.x, point.y, '#fff', size,
+                                                 true);
           this.currentStroke.page = page;
           page.elements.push(this.currentStroke);
 
@@ -325,16 +326,16 @@
           e.preventDefault();
 
           const oldPoint = {
-            x: this.oldX / page.canvas.width,
-            y: this.oldY / page.canvas.height
+            x: this.oldX / page.canvas.width * window.devicePixelRatio,
+            y: this.oldY / page.canvas.height * window.devicePixelRatio
           };
 
           this.oldX = x - page.canvas.offsetLeft;
           this.oldY = y - page.canvas.offsetTop;
 
           const point = {
-            x: this.oldX / page.canvas.width,
-            y: this.oldY / page.canvas.height
+            x: this.oldX / page.canvas.width * window.devicePixelRatio,
+            y: this.oldY / page.canvas.height * window.devicePixelRatio
           };
 
           page.elements[page.elements.length - 1].points.push(point);
@@ -358,10 +359,10 @@
             for (var i = 0; i < this.currentStroke.page.elements.length; i++) {
               const element = this.currentStroke.page.elements[i];
               if (element == this.currentStroke) {
-                this.currentStroke.page.elements.splice(i);
+                this.currentStroke.page.elements.splice(i, 1);
                 i--;
               } else if (this.touchedElements.includes(element)) {
-                this.currentStroke.page.elements.splice(i);
+                this.currentStroke.page.elements.splice(i, 1);
                 i--;
               }
             }
@@ -414,8 +415,8 @@
           resize() {
             const targetWidth = window.innerWidth - 30;
             const factor = targetWidth / this.size.w;
-            this.canvas.width = targetWidth;
-            this.canvas.height = this.size.h * factor;
+            this.canvas.width = targetWidth * window.devicePixelRatio;
+            this.canvas.height = this.size.h * factor * window.devicePixelRatio;
           },
           redraw() {
             if (this.pdfPage > 0) {
@@ -484,7 +485,7 @@
           const page = await currentPdf.getPage(num);
 
           const canvas = document.createElement('canvas');
-          const scale = (window.innerWidth - 30)
+          const scale = (window.innerWidth - 30) * window.devicePixelRatio
                           / page.getViewport({ scale: 1 }).width;
 
           const viewport = page.getViewport({ scale: scale });
