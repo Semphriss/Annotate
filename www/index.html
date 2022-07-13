@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
     <title>Annotate</title>
     <style>
       html, body {
@@ -31,13 +32,16 @@
         position: fixed;
         height: 48px;
         width: 100%;
-        bottom: 0px;
-        left: 0px;
+        bottom: -8px;
+        left: -8px;
+        right: -8px;
         background-color: #dde;
         box-shadow: 0 0 5px black;
         flex-direction: row;
         align-items: center;
         justify-content: center;
+        border: 8px solid #dde;
+        border-top: none;
       }
 
       #toolbox > * {
@@ -106,6 +110,7 @@
       var pdfCanvases = [];
       var docPages = [];
       var currentTool = null;
+      var zoom = 1.0;
 
       function StrokeElement(startX, startY, color, lineWidth, relative) {
         this.color = color;
@@ -195,8 +200,8 @@
           this.oldY = y - page.canvas.offsetTop;
 
           const point = {
-            x: this.oldX / page.canvas.width * window.devicePixelRatio,
-            y: this.oldY / page.canvas.height * window.devicePixelRatio
+            x: this.oldX / page.canvas.width * window.devicePixelRatio / zoom,
+            y: this.oldY / page.canvas.height * window.devicePixelRatio / zoom
           };
 
           var size = this.size;
@@ -231,8 +236,8 @@
           this.oldY = y - page.canvas.offsetTop;
 
           page.elements[page.elements.length - 1].points.push({
-            x: this.oldX / page.canvas.width * window.devicePixelRatio,
-            y: this.oldY / page.canvas.height * window.devicePixelRatio
+            x: this.oldX / page.canvas.width * window.devicePixelRatio / zoom,
+            y: this.oldY / page.canvas.height * window.devicePixelRatio / zoom
           });
 
           page.redraw();
@@ -281,8 +286,8 @@
           this.oldY = y - page.canvas.offsetTop;
 
           const point = {
-            x: this.oldX / page.canvas.width * window.devicePixelRatio,
-            y: this.oldY / page.canvas.height * window.devicePixelRatio
+            x: this.oldX / page.canvas.width * window.devicePixelRatio / zoom,
+            y: this.oldY / page.canvas.height * window.devicePixelRatio / zoom
           };
 
           var size = this.size;
@@ -326,16 +331,16 @@
           e.preventDefault();
 
           const oldPoint = {
-            x: this.oldX / page.canvas.width * window.devicePixelRatio,
-            y: this.oldY / page.canvas.height * window.devicePixelRatio
+            x: this.oldX / page.canvas.width * window.devicePixelRatio / zoom,
+            y: this.oldY / page.canvas.height * window.devicePixelRatio / zoom
           };
 
           this.oldX = x - page.canvas.offsetLeft;
           this.oldY = y - page.canvas.offsetTop;
 
           const point = {
-            x: this.oldX / page.canvas.width * window.devicePixelRatio,
-            y: this.oldY / page.canvas.height * window.devicePixelRatio
+            x: this.oldX / page.canvas.width * window.devicePixelRatio / zoom,
+            y: this.oldY / page.canvas.height * window.devicePixelRatio / zoom
           };
 
           page.elements[page.elements.length - 1].points.push(point);
@@ -415,7 +420,7 @@
           resize() {
             const targetWidth = window.innerWidth - 30;
             const factor = targetWidth / this.size.w;
-            this.canvas.width = targetWidth * window.devicePixelRatio;
+            this.canvas.width = this.size.w * factor * window.devicePixelRatio;
             this.canvas.height = this.size.h * factor * window.devicePixelRatio;
           },
           redraw() {
@@ -448,17 +453,68 @@
             currentTool.onup(e, newDocPage);
         });
 
+        var lastAveragePt = null;
+        var lastMaxDist = null;
         canvas.addEventListener('touchstart', (e) => {
+          // TODO: Calculate average touch point and set it
+
           if (currentTool)
             currentTool.ondown(e, newDocPage);
         });
 
         canvas.addEventListener('touchmove', (e) => {
+          if (e.touches.length >= 2) {
+            e.preventDefault();
+
+            if (currentTool && typeof currentTool.cancel === 'function')
+              currentTool.cancel();
+
+            const averagePt = { x: 0, y: 0 };
+            for (const touch of e.touches) {
+              averagePt.x += touch.clientX;
+              averagePt.y += touch.clientY;
+            }
+            averagePt.x /= e.touches.length;
+            averagePt.y /= e.touches.length;
+
+            var maxDist = 0;
+            for (const touch of e.touches) {
+              for (const touch2 of e.touches) {
+                const dist = Math.sqrt(Math.pow(touch.clientX - touch2.clientX,
+                              2) + Math.pow(touch.clientY - touch2.clientY, 2));
+                if (maxDist < dist)
+                  maxDist = dist;
+              }
+            }
+
+            if (lastAveragePt) {
+              window.scrollBy(lastAveragePt.x - averagePt.x,
+                              lastAveragePt.y - averagePt.y);
+            }
+
+            if (lastMaxDist) {
+              zoom *= maxDist / lastMaxDist;
+              zoom = Math.max(1, Math.min(10, zoom));
+              const pages = document.getElementById("pages");
+              pages.style.width = (zoom * 100) + "%";
+            }
+
+            lastAveragePt = averagePt;
+            lastMaxDist = maxDist;
+            return;
+          }
+
+          lastAveragePt = null;
+          lastMaxDist = null;
+
           if (currentTool)
             currentTool.onmove(e, newDocPage);
         });
 
         canvas.addEventListener('touchend', (e) => {
+          lastAveragePt = null;
+          lastMaxDist = null;
+
           if (currentTool)
             currentTool.onup(e, newDocPage);
         });
