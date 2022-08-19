@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Annotate
-Exec=webapp-container --app-id="annotate.semphris" $@ www/index.html
+Exec=run.sh %U
 Icon=assets/logo.svg
 Terminal=false
 Type=Application

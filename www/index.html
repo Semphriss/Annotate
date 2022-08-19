@@ -9,6 +9,7 @@
         background-color: #333843;
         margin: 0;
         padding: 0;
+        font-family: sans-serif;
       }
 
       canvas {
@@ -29,12 +30,12 @@
 
       #loading {
         background: #0007;
-        position: absolute;
+        position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        z-index: 999999999;
+        z-index: 100;
       }
 
       .spinner {
@@ -80,14 +81,22 @@
         padding: 5px;
       }
 
+      #toolbar-container {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+      }
+
       #toolbar {
         display: flex;
         flex-direction: row;
         align-items: flex-start;
         justify-content: center;
+        margin: auto;
       }
 
-      #toolbar > * {
+      #toolbar > *,
+      #tool-menu {
         width: 40px;
         height: 40px;
         border-radius: 4px;
@@ -101,6 +110,11 @@
         background: #7777;
       }
 
+      #tool-menu {
+        align-self: flex-start;
+        margin-left: 8px;
+      }
+
       #toolbar-extended {
         display: block;
         height: 180px;
@@ -108,30 +122,150 @@
         background-color: #0007;
         margin: 10px;
       }
+
+      #pdflist {
+        color: white;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url(logo_alpha.svg) calc(100% + 100px) calc(100% + 200px)
+                                      / calc(50% + 300px) no-repeat, #444450;
+        z-index: 10;
+        height: 100%;
+      }
+
+      #pdflist h1 {
+        font-size: 24px;
+        font-weight: normal;
+        margin-left: 15px;
+      }
+
+      #pdflist ul {
+        position: relative;
+        list-style: none;
+        padding: 0;
+        margin: 15px;
+        overflow: auto;
+        height: calc(100% - 50px);
+      }
+
+      #pdflist ul:empty::after {
+        content: 'No files to list. Tap \'Load PDF\'!';
+        display: inline-block;
+        position: relative;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        opacity: 0.5;
+      }
+
+      #pdflist li {
+        padding: 15px;
+        border-top: 1px solid #7777;
+        cursor: pointer;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      #pdflist li:hover {
+        background: #7777;
+      }
+
+      #pdflist li:active {
+        background: #777;
+      }
+
+      #loadfile {
+        display: none;
+      }
+
+      .max-width {
+        max-width: 780px;
+        margin: auto;
+        height: calc(100% - 30px);
+      }
+
+      .button-like {
+        border: 1px solid #777;
+        padding: 5px 15px;
+        margin-right: 15px;
+        border-radius: 5px;
+        float: right;
+        cursor: pointer;
+      }
+
+      .button-like:hover {
+        background: #7777;
+      }
+
+      .button-like:active {
+        background: #777;
+      }
+
+      #settings {
+        float: right;
+        width: 32px;
+        height: 32px;
+        padding: 6px;
+      }
+
+      .tool {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        padding: 0px;
+        background: none;
+        border: none;
+        margin-right: 10px;
+        color: white;
+      }
+
+      .tool.selected {
+        background: #7777;
+      }
     </style>
   </head>
   <body>
     <div id="pages"></div>
     <div id="toolbox">
-      <div id="toolbar">
-        <button id="tool-pencil">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M362.7 19.32C387.7-5.678 428.3-5.678 453.3 19.32L492.7 58.75C517.7 83.74 517.7 124.3 492.7 149.3L444.3 197.7L314.3 67.72L362.7 19.32zM421.7 220.3L188.5 453.4C178.1 463.8 165.2 471.5 151.1 475.6L30.77 511C22.35 513.5 13.24 511.2 7.03 504.1C.8198 498.8-1.502 489.7 .976 481.2L36.37 360.9C40.53 346.8 48.16 333.9 58.57 323.5L291.7 90.34L421.7 220.3z"/></svg>
+      <div id="toolbar-container">
+        <button id="tool-menu">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.33 14.33 64 32 64H416C433.7 64 448 78.33 448 96C448 113.7 433.7 128 416 128H32C14.33 128 0 113.7 0 96zM0 256C0 238.3 14.33 224 32 224H416C433.7 224 448 238.3 448 256C448 273.7 433.7 288 416 288H32C14.33 288 0 273.7 0 256zM416 448H32C14.33 448 0 433.7 0 416C0 398.3 14.33 384 32 384H416C433.7 384 448 398.3 448 416C448 433.7 433.7 448 416 448z"/></svg>
         </button>
-        <button id="tool-highlighter">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M143.1 320V248.3C143.1 233 151.2 218.7 163.5 209.6L436.6 8.398C444 2.943 452.1 0 462.2 0C473.6 0 484.5 4.539 492.6 12.62L547.4 67.38C555.5 75.46 559.1 86.42 559.1 97.84C559.1 107 557.1 115.1 551.6 123.4L350.4 396.5C341.3 408.8 326.1 416 311.7 416H239.1L214.6 441.4C202.1 453.9 181.9 453.9 169.4 441.4L118.6 390.6C106.1 378.1 106.1 357.9 118.6 345.4L143.1 320zM489.4 99.92L460.1 70.59L245 229L330.1 314.1L489.4 99.92zM23.03 466.3L86.06 403.3L156.7 473.9L125.7 504.1C121.2 509.5 115.1 512 108.7 512H40C26.75 512 16 501.3 16 488V483.3C16 476.1 18.53 470.8 23.03 466.3V466.3z"/></svg>
-        </button>
-        <button id="tool-eraser">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M480 416C497.7 416 512 430.3 512 448C512 465.7 497.7 480 480 480H150.6C133.7 480 117.4 473.3 105.4 461.3L25.37 381.3C.3786 356.3 .3786 315.7 25.37 290.7L258.7 57.37C283.7 32.38 324.3 32.38 349.3 57.37L486.6 194.7C511.6 219.7 511.6 260.3 486.6 285.3L355.9 416H480zM265.4 416L332.7 348.7L195.3 211.3L70.63 336L150.6 416L265.4 416z"/></svg>
-        </button>
-        <button id="tool-hand" class="selected">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M480 128v208c0 97.05-78.95 176-176 176h-37.72c-53.42 0-103.7-20.8-141.4-58.58l-113.1-113.1C3.906 332.5 0 322.2 0 312C0 290.7 17.15 272 40 272c10.23 0 20.47 3.906 28.28 11.72L128 343.4V64c0-17.67 14.33-32 32-32s32 14.33 32 32l.0729 176C192.1 248.8 199.2 256 208 256s16.07-7.164 16.07-16L224 32c0-17.67 14.33-32 32-32s32 14.33 32 32l.0484 208c0 8.836 7.111 16 15.95 16S320 248.8 320 240L320 64c0-17.67 14.33-32 32-32s32 14.33 32 32l.0729 176c0 8.836 7.091 16 15.93 16S416 248.8 416 240V128c0-17.67 14.33-32 32-32S480 110.3 480 128z"/></svg>
-        </button>
+        <div id="toolbar">
+          <button id="tool-pencil">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M362.7 19.32C387.7-5.678 428.3-5.678 453.3 19.32L492.7 58.75C517.7 83.74 517.7 124.3 492.7 149.3L444.3 197.7L314.3 67.72L362.7 19.32zM421.7 220.3L188.5 453.4C178.1 463.8 165.2 471.5 151.1 475.6L30.77 511C22.35 513.5 13.24 511.2 7.03 504.1C.8198 498.8-1.502 489.7 .976 481.2L36.37 360.9C40.53 346.8 48.16 333.9 58.57 323.5L291.7 90.34L421.7 220.3z"/></svg>
+          </button>
+          <button id="tool-highlighter">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M143.1 320V248.3C143.1 233 151.2 218.7 163.5 209.6L436.6 8.398C444 2.943 452.1 0 462.2 0C473.6 0 484.5 4.539 492.6 12.62L547.4 67.38C555.5 75.46 559.1 86.42 559.1 97.84C559.1 107 557.1 115.1 551.6 123.4L350.4 396.5C341.3 408.8 326.1 416 311.7 416H239.1L214.6 441.4C202.1 453.9 181.9 453.9 169.4 441.4L118.6 390.6C106.1 378.1 106.1 357.9 118.6 345.4L143.1 320zM489.4 99.92L460.1 70.59L245 229L330.1 314.1L489.4 99.92zM23.03 466.3L86.06 403.3L156.7 473.9L125.7 504.1C121.2 509.5 115.1 512 108.7 512H40C26.75 512 16 501.3 16 488V483.3C16 476.1 18.53 470.8 23.03 466.3V466.3z"/></svg>
+          </button>
+          <button id="tool-eraser">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M480 416C497.7 416 512 430.3 512 448C512 465.7 497.7 480 480 480H150.6C133.7 480 117.4 473.3 105.4 461.3L25.37 381.3C.3786 356.3 .3786 315.7 25.37 290.7L258.7 57.37C283.7 32.38 324.3 32.38 349.3 57.37L486.6 194.7C511.6 219.7 511.6 260.3 486.6 285.3L355.9 416H480zM265.4 416L332.7 348.7L195.3 211.3L70.63 336L150.6 416L265.4 416z"/></svg>
+          </button>
+          <button id="tool-hand" class="selected">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M480 128v208c0 97.05-78.95 176-176 176h-37.72c-53.42 0-103.7-20.8-141.4-58.58l-113.1-113.1C3.906 332.5 0 322.2 0 312C0 290.7 17.15 272 40 272c10.23 0 20.47 3.906 28.28 11.72L128 343.4V64c0-17.67 14.33-32 32-32s32 14.33 32 32l.0729 176C192.1 248.8 199.2 256 208 256s16.07-7.164 16.07-16L224 32c0-17.67 14.33-32 32-32s32 14.33 32 32l.0484 208c0 8.836 7.111 16 15.95 16S320 248.8 320 240L320 64c0-17.67 14.33-32 32-32s32 14.33 32 32l.0729 176c0 8.836 7.091 16 15.93 16S416 248.8 416 240V128c0-17.67 14.33-32 32-32S480 110.3 480 128z"/></svg>
+          </button>
+        </div>
       </div>
       <div id="toolbar-extended">
-        <input id="loadfile" type="file" accept="application/pdf" />
       </div>
     </div>
     <div id="loading" class="hide"><div class="spinner"></div></div>
+    <div id="pdflist">
+      <div class="max-width">
+        <label class="button-like" for="loadfile">Load PDF</label>
+        <button id="settings" class="tool">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path fill="#FFFFFF" d="M495.9 166.6C499.2 175.2 496.4 184.9 489.6 191.2L446.3 230.6C447.4 238.9 448 247.4 448 256C448 264.6 447.4 273.1 446.3 281.4L489.6 320.8C496.4 327.1 499.2 336.8 495.9 345.4C491.5 357.3 486.2 368.8 480.2 379.7L475.5 387.8C468.9 398.8 461.5 409.2 453.4 419.1C447.4 426.2 437.7 428.7 428.9 425.9L373.2 408.1C359.8 418.4 344.1 427 329.2 433.6L316.7 490.7C314.7 499.7 307.7 506.1 298.5 508.5C284.7 510.8 270.5 512 255.1 512C241.5 512 227.3 510.8 213.5 508.5C204.3 506.1 197.3 499.7 195.3 490.7L182.8 433.6C167 427 152.2 418.4 138.8 408.1L83.14 425.9C74.3 428.7 64.55 426.2 58.63 419.1C50.52 409.2 43.12 398.8 36.52 387.8L31.84 379.7C25.77 368.8 20.49 357.3 16.06 345.4C12.82 336.8 15.55 327.1 22.41 320.8L65.67 281.4C64.57 273.1 64 264.6 64 256C64 247.4 64.57 238.9 65.67 230.6L22.41 191.2C15.55 184.9 12.82 175.3 16.06 166.6C20.49 154.7 25.78 143.2 31.84 132.3L36.51 124.2C43.12 113.2 50.52 102.8 58.63 92.95C64.55 85.8 74.3 83.32 83.14 86.14L138.8 103.9C152.2 93.56 167 84.96 182.8 78.43L195.3 21.33C197.3 12.25 204.3 5.04 213.5 3.51C227.3 1.201 241.5 0 256 0C270.5 0 284.7 1.201 298.5 3.51C307.7 5.04 314.7 12.25 316.7 21.33L329.2 78.43C344.1 84.96 359.8 93.56 373.2 103.9L428.9 86.14C437.7 83.32 447.4 85.8 453.4 92.95C461.5 102.8 468.9 113.2 475.5 124.2L480.2 132.3C486.2 143.2 491.5 154.7 495.9 166.6V166.6zM256 336C300.2 336 336 300.2 336 255.1C336 211.8 300.2 175.1 256 175.1C211.8 175.1 176 211.8 176 255.1C176 300.2 211.8 336 256 336z"/></svg>
+        </button>
+        <input id="loadfile" type="file" accept="application/pdf" />
+        <h1>Annotate</h1>
+        <ul id="filelist"></ul>
+      </div>
+    </div>
     <script src="pdf.js"></script>
     <script>
       /**
@@ -156,6 +290,18 @@
        * JavaScript code in this page
        */
 
+      function Uint8ArrayToBase64(arr) {
+        var binary = '';
+        for (const byte of arr) {
+          binary += String.fromCharCode(byte);
+        }
+        return window.btoa(binary)
+      }
+
+      function Base64ToUint8Array(b64) {
+        return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      }
+
       var pdfjsLib = window['pdfjs-dist/build/pdf'];
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.js';
 
@@ -163,15 +309,103 @@
       const loadfile = document.getElementById('loadfile');
       const loader = document.getElementById('loading');
       const toolbox = document.getElementById('toolbox');
+      const filelist = document.getElementById('filelist');
+      const pdflist = document.getElementById('pdflist');
+      const settings = document.getElementById('settings');
 
       // Toolbox height (distance for the expansion)
       const tbH = 200;
 
       var currentPdf = null;
+      var currentFile = '';
       var pdfCanvases = [];
       var docPages = [];
       var currentTool = null;
       var zoom = 1.0;
+      var lastSave = '';
+      var filenames = [];
+      var editingFiles = false;
+
+      function showMenu() {
+        pdflist.classList.remove('hide');
+        loader.classList.remove('hide');
+        fetch('/cgi-bin/list.sh').then(async (e) => {
+          filenames = (await e.text()).split('\n').filter(s => s !== '');
+          editingFiles = false;
+          refreshFileList();
+          loader.classList.add('hide');
+        });
+      }
+
+      function hideMenu() {
+        pdflist.classList.add('hide');
+      }
+
+      function refreshFileList() {
+        filelist.innerHTML = '';
+        if (editingFiles) {
+          for (const file of filenames) {
+            const elem = document.createElement('li');
+            const delBtn = document.createElement('button');
+            delBtn.classList.add('tool');
+            delBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path fill="#FF0000" d="M135.2 17.69C140.6 6.848 151.7 0 163.8 0H284.2C296.3 0 307.4 6.848 312.8 17.69L320 32H416C433.7 32 448 46.33 448 64C448 81.67 433.7 96 416 96H32C14.33 96 0 81.67 0 64C0 46.33 14.33 32 32 32H128L135.2 17.69zM31.1 128H416V448C416 483.3 387.3 512 352 512H95.1C60.65 512 31.1 483.3 31.1 448V128zM111.1 208V432C111.1 440.8 119.2 448 127.1 448C136.8 448 143.1 440.8 143.1 432V208C143.1 199.2 136.8 192 127.1 192C119.2 192 111.1 199.2 111.1 208zM207.1 208V432C207.1 440.8 215.2 448 223.1 448C232.8 448 240 440.8 240 432V208C240 199.2 232.8 192 223.1 192C215.2 192 207.1 199.2 207.1 208zM304 208V432C304 440.8 311.2 448 320 448C328.8 448 336 440.8 336 432V208C336 199.2 328.8 192 320 192C311.2 192 304 199.2 304 208z"/></svg>';
+            delBtn.addEventListener('click', async () => {
+              if (!confirm('Are you sure you want to delete ' + file + '?'))
+                return;
+              // The server won't close the connection, so we have to close it
+              // ourselves.
+              loading.classList.remove('hide');
+              const controller = new AbortController()
+              setTimeout(() => { controller.abort(); }, 1000);
+              const response = await fetch('/cgi-bin/delete.sh?file=' + file);
+              filenames = filenames.filter(f => f !== file);
+              refreshFileList();
+              loading.classList.add('hide');
+            });
+            elem.appendChild(delBtn);
+            elem.appendChild(document.createTextNode(file));
+            filelist.appendChild(elem);
+          }
+
+          if (!settings.classList.contains('selected'))
+            settings.classList.add('selected');
+        } else {
+          for (const file of filenames) {
+            const elem = document.createElement('li');
+            elem.innerText = file;
+            elem.addEventListener('touchend', async (e) => {
+              loader.classList.remove('hide');
+              const response = await fetch('/cgi-bin/get.sh?file=' + file);
+              const data = await response.text();
+              currentFile = file;
+              await parseAll(data);
+              hideMenu();
+              saveFile();
+              loader.classList.add('hide');
+            });
+            filelist.appendChild(elem);
+          }
+          settings.classList.remove('selected');
+        }
+      };
+
+      settings.addEventListener('click', () => {
+        editingFiles = !editingFiles;
+        refreshFileList();
+      });
+
+      function parseElement(s) {
+        const tokens = s.split(',');
+        const elem = tokens[0];
+
+        switch(elem) {
+          case 'stroke':
+            return Object.assign(new StrokeElement(),
+                                 JSON.parse(atob(tokens[1])));
+        }
+
+        throw "Unknown element '" + elem + "'";
+      }
 
       function StrokeElement(startX, startY, color, lineWidth, relative) {
         this.color = color;
@@ -233,6 +467,15 @@
           }
           return false;
         };
+        this.serialize = () => {
+          return 'stroke,' + btoa(JSON.stringify({
+            color: this.color,
+            lineWidth: this.lineWidth,
+            relative: this.relative,
+            points: this.points,
+            erased: this.erased
+          }));
+        }
       }
 
       function PenTool(color, size, relativeToScreen) {
@@ -496,6 +739,13 @@
             for (const element of this.elements) {
               element.draw(this);
             }
+          },
+          serialize() {
+            var s = this.pdfPage + ":" + this.size.w + ":" + this.size.h + ":";
+            for (const element of this.elements.filter(e => !!e)) {
+              s += element.serialize() + ";";
+            }
+            return s;
           }
         }
 
@@ -578,6 +828,8 @@
 
           if (currentTool)
             currentTool.onup(e, newDocPage);
+
+          saveFile();
         });
 
         newDocPage.resize();
@@ -589,6 +841,61 @@
           pagesContainer.append(canvas);
         else
           pagesContainer.insertBefore(canvas, docPages[pos].canvas);
+
+        return newDocPage;
+      }
+
+      async function serializeAll() {
+        var s = currentPdf ? Uint8ArrayToBase64(await currentPdf.getData()) : ''
+        s += '\n';
+        for (const page of docPages) {
+          s += page.serialize() + '\n';
+        }
+        s = s.slice(0, -1);
+        return s;
+      }
+
+      async function parseAll(s) {
+        loader.classList.remove('hide');
+
+        var i = 0;
+        for (const page of s.split('\n')) {
+          i++
+          if (i === 1) {
+            const data = Base64ToUint8Array(page);
+            console.log(data[0], data[1], data[2], data[3]);
+            currentPdf = await pdfjsLib.getDocument({ data: data }).promise;
+            await loadPdf(false);
+            continue;
+          } else if (i === 2) {
+            // Not doing this at the end of `i === 1` allows files with no pages
+            // to automatically load the default PDF pages
+            docPages = [];
+            pagesContainer.innerHTML = '';
+          }
+
+          const tokens = page.split(':');
+
+          if (tokens.length === 0)
+            continue;
+
+          if (tokens.length !== 4) {
+            throw "Can't parseAll: page token length !== 4";
+          }
+
+          const p = addPage(null, parseInt(tokens[0]), {
+            x: parseInt(tokens[1]),
+            y: parseInt(tokens[2])
+          });
+
+          for (const elem of tokens[3].split(';').filter((e) => e !== '')) {
+            p.elements.push(parseElement(elem));
+          }
+
+          p.redraw();
+        }
+
+        loader.classList.add('hide');
       }
 
       async function loadPdf(isReload) {
@@ -639,7 +946,28 @@
         reader.onload = async function(event) {
           const data = event.target.result;
           currentPdf = await pdfjsLib.getDocument({ data: data }).promise;
+          const origFilename = loadfile.files[0].name
+                                .replace(/[^a-z0-9_-]/gi, '_')
+                                .replace(/_+/gi, '_');
+          currentFile = origFilename;
+          var i = 0;
+          while (filenames.includes(currentFile)) {
+            i++;
+            currentFile = origFilename + i;
+          }
+          filenames.unshift(currentFile);
           await loadPdf(false);
+
+          // The server won't close the connection, so we have to close it
+          // ourselves.
+          const controller = new AbortController();
+          setTimeout(() => { controller.abort(); }, 1000);
+          await fetch('/cgi-bin/ack.sh', {
+            signal: controller.signal
+          });
+
+          saveFile();
+          hideMenu();
           loader.classList.add('hide');
         };
 
@@ -648,13 +976,13 @@
 
       var currentWidth = 0;
       window.addEventListener('resize', function(event) {
-        if (!currentPdf)
-          return;
-
         for (const page of docPages) {
           page.resize();
           page.redraw();
         }
+
+        if (!currentPdf)
+          return;
 
         if (currentWidth == window.innerWidth)
           return;
@@ -680,6 +1008,10 @@
         }
         document.getElementById(tool).classList.add("selected");
       }
+
+      document.getElementById("tool-menu").addEventListener('click', (e) => {
+        showMenu();
+      });
 
       document.getElementById("tool-pencil").addEventListener('click', (e) => {
         switchSelectedTool("tool-pencil");
@@ -764,6 +1096,37 @@
         toolbox.style.transform = toolboxExpanded ? 'translateY(-' + tbH + 'px)'
                                                   : '';
       });
+
+      var saving = false;
+      async function saveFile() {
+        // Javascript is single-threaded, so no race condition here between the
+        // check and the set
+        if (saving || !loader.classList.contains('hide') || !currentFile)
+          return;
+
+        saving = true;
+
+        const s = await serializeAll();
+        if (lastSave !== s) {
+          lastSave = s;
+
+          // The server won't close the connection, so we have to close it
+          // ourselves.
+          const controller = new AbortController()
+          setTimeout(() => { controller.abort(); }, 1000);
+          const response = await fetch('/cgi-bin/save.sh?file=' + currentFile, {
+            method: 'POST',
+            body: lastSave,
+            signal: controller.signal
+          });
+        }
+
+        saving = false;
+      }
+
+      setInterval(saveFile, 5000);
+
+      showMenu();
     </script>
   </body>
 </html>

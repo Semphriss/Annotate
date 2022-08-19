@@ -6,7 +6,8 @@
     "hooks": {
         "annotate": {
             "apparmor": "annotate.apparmor",
-            "desktop":  "annotate.desktop"
+            "desktop":  "annotate.desktop",
+            "content-hub": "annotate-contenthub.json"
         }
     },
     "version": "0.0.1",

@@ -1,5 +1,5 @@
 {
-    "template": "ubuntu-webapp",
+    "template": "unconfined",
     "policy_groups": [
         "webview",
         "networking",
