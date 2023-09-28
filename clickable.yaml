@@ -1,3 +1,4 @@
 clickable_minimum_required: 7.1.2
 builder: pure
 kill: webapp-container*
+framework: ubuntu-sdk-20.04

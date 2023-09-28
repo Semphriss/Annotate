@@ -104,6 +104,7 @@
         background: none;
         border: none;
         margin: 0 2px;
+        outline: none;
       }
 
       #toolbar > .selected {
@@ -181,6 +182,23 @@
 
       #loadfile {
         display: none;
+      }
+
+      #filelist > li > span {
+        display: inline-block;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      #filelist input {
+        display: inline;
+        width: 100%;
+        border-radius: 5px;
+        padding: 5px;
+        background: #777;
+        border: 0.5px solid white;
+        color: white;
       }
 
       .max-width {
@@ -352,18 +370,24 @@
             delBtn.addEventListener('click', async () => {
               if (!confirm('Are you sure you want to delete ' + file + '?'))
                 return;
-              // The server won't close the connection, so we have to close it
-              // ourselves.
               loading.classList.remove('hide');
-              const controller = new AbortController()
-              setTimeout(() => { controller.abort(); }, 1000);
-              const response = await fetch('/cgi-bin/delete.sh?file=' + file);
+              await fetch('/cgi-bin/delete.sh?file=' + file);
               filenames = filenames.filter(f => f !== file);
               refreshFileList();
               loading.classList.add('hide');
             });
             elem.appendChild(delBtn);
-            elem.appendChild(document.createTextNode(file));
+            const pElem = document.createElement('input');
+            pElem.value = file;
+            pElem.addEventListener('blur', async () => {
+              const newname = pElem.value.replace(/[^a-z0-9_-]/gi, '_')
+                                         .replace(/_+/gi, '_');
+              await fetch('/cgi-bin/rename.sh?file=' + file + '&newname=' + newname);
+              fetch('/cgi-bin/list.sh').then(async (e) => {
+                filenames = (await e.text()).split('\n').filter(s => s !== '');
+              });
+            });
+            elem.appendChild(pElem);
             filelist.appendChild(elem);
           }
 
@@ -372,15 +396,33 @@
         } else {
           for (const file of filenames) {
             const elem = document.createElement('li');
-            elem.innerText = file;
+            const pElem = document.createElement('span');
+            pElem.appendChild(document.createTextNode(file));
+            elem.appendChild(pElem);
+
+            elem.addEventListener('touchstart', (e) => {
+              elem.isTouching = true;
+            });
+
+            elem.addEventListener('touchmove', (e) => {
+              elem.isTouching = false;
+            });
+
+            elem.addEventListener('touchcancel', (e) => {
+              elem.isTouching = false;
+            });
+
             elem.addEventListener('touchend', async (e) => {
+              if (!elem.isTouching) return;
+              elem.isTouching = false;
               loader.classList.remove('hide');
               const response = await fetch('/cgi-bin/get.sh?file=' + file);
               const data = await response.text();
               currentFile = file;
-              await parseAll(data);
-              hideMenu();
-              saveFile();
+              if (await parseAll(data)) {
+                hideMenu();
+                saveFile();
+              }
               loader.classList.add('hide');
             });
             filelist.appendChild(elem);
@@ -864,7 +906,15 @@
           if (i === 1) {
             const data = Base64ToUint8Array(page);
             console.log(data[0], data[1], data[2], data[3]);
-            currentPdf = await pdfjsLib.getDocument({ data: data }).promise;
+            try {
+              currentPdf = await pdfjsLib.getDocument({ data: data }).promise;
+            } catch(e) {
+              console.log("Couldn't load PDF:");
+              console.log(e);
+              alert("Could not load PDF. The file may be corrupted, or not a PDF file at all.");
+              loader.classList.add('hide');
+              return false;
+            }
             await loadPdf(false);
             continue;
           } else if (i === 2) {
@@ -880,7 +930,9 @@
             continue;
 
           if (tokens.length !== 4) {
-            throw "Can't parseAll: page token length !== 4";
+            console.log("Can't parseAll: page token length !== 4");
+            alert("Could not load annotation data. The file is probably corrupted.");
+            return false;
           }
 
           const p = addPage(null, parseInt(tokens[0]), {
@@ -896,6 +948,7 @@
         }
 
         loader.classList.add('hide');
+        return true;
       }
 
       async function loadPdf(isReload) {
@@ -945,10 +998,20 @@
         var reader = new FileReader();
         reader.onload = async function(event) {
           const data = event.target.result;
-          currentPdf = await pdfjsLib.getDocument({ data: data }).promise;
           const origFilename = loadfile.files[0].name
                                 .replace(/[^a-z0-9_-]/gi, '_')
                                 .replace(/_+/gi, '_');
+          try {
+            currentPdf = await pdfjsLib.getDocument({ data: data }).promise;
+          } catch(e) {
+            console.log("Couldn't load PDF:");
+            console.log(e);
+            alert("Could not load PDF. The file may be corrupted, or not a PDF file at all.");
+            await fetch('/cgi-bin/ack.sh');
+            await fetch('/cgi-bin/delete.sh?file=' + origFilename);
+            loader.classList.add('hide');
+            return;
+          }
           currentFile = origFilename;
           var i = 0;
           while (filenames.includes(currentFile)) {
@@ -958,13 +1021,7 @@
           filenames.unshift(currentFile);
           await loadPdf(false);
 
-          // The server won't close the connection, so we have to close it
-          // ourselves.
-          const controller = new AbortController();
-          setTimeout(() => { controller.abort(); }, 1000);
-          await fetch('/cgi-bin/ack.sh', {
-            signal: controller.signal
-          });
+          await fetch('/cgi-bin/ack.sh');
 
           saveFile();
           hideMenu();
@@ -1112,12 +1169,12 @@
 
           // The server won't close the connection, so we have to close it
           // ourselves.
-          const controller = new AbortController()
-          setTimeout(() => { controller.abort(); }, 1000);
+          // const controller = new AbortController()
+          // setTimeout(() => { controller.abort(); }, 1000);
           const response = await fetch('/cgi-bin/save.sh?file=' + currentFile, {
             method: 'POST',
             body: lastSave,
-            signal: controller.signal
+            // signal: controller.signal
           });
         }
 
