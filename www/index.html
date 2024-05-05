@@ -302,7 +302,7 @@
        * @licstart The following is the entire license notice for the
        * JavaScript code in this page
        *
-       * Copyright 2022 Semphris <semphris@semphris.com>
+       * Copyright 2022-2024 Semphris <semphris@semphris.com>
        *
        * Licensed under the Apache License, Version 2.0 (the "License");
        * you may not use this file except in compliance with the License.
@@ -319,6 +319,8 @@
        * @licend The above is the entire license notice for the
        * JavaScript code in this page
        */
+
+      const key = window.location.search.replace(/^.*key=([a-zA-Z0-9]+).*$/i, "$1");
 
       function Uint8ArrayToBase64(arr) {
         var binary = '';
@@ -360,7 +362,7 @@
       function showMenu() {
         pdflist.classList.remove('hide');
         loader.classList.remove('hide');
-        fetch('/cgi-bin/list.sh').then(async (e) => {
+        fetch('/cgi-bin/list.sh?key=' + key).then(async (e) => {
           filenames = (await e.text()).split('\n').filter(s => s !== '');
           editingFiles = false;
           refreshFileList();
@@ -384,7 +386,7 @@
               if (!confirm('Are you sure you want to delete ' + file + '?'))
                 return;
               loading.classList.remove('hide');
-              await fetch('/cgi-bin/delete.sh?file=' + file);
+              await fetch('/cgi-bin/delete.sh?file=' + file + '&key=' + key);
               filenames = filenames.filter(f => f !== file);
               refreshFileList();
               loading.classList.add('hide');
@@ -395,8 +397,8 @@
             pElem.addEventListener('blur', async () => {
               const newname = pElem.value.replace(/[^a-z0-9_-]/gi, '_')
                                          .replace(/_+/gi, '_');
-              await fetch('/cgi-bin/rename.sh?file=' + file + '&newname=' + newname);
-              fetch('/cgi-bin/list.sh').then(async (e) => {
+              await fetch('/cgi-bin/rename.sh?file=' + file + '&newname=' + newname + '&key=' + key);
+              fetch('/cgi-bin/list.sh?key=' + key).then(async (e) => {
                 filenames = (await e.text()).split('\n').filter(s => s !== '');
               });
             });
@@ -429,7 +431,7 @@
               if (!elem.isTouching) return;
               elem.isTouching = false;
               loader.classList.remove('hide');
-              const response = await fetch('/cgi-bin/get.sh?file=' + file);
+              const response = await fetch('/cgi-bin/get.sh?file=' + file + '&key=' + key);
               const data = await response.text();
               currentFile = file;
               if (await parseAll(data)) {
@@ -1049,8 +1051,8 @@
             console.log("Couldn't load PDF:");
             console.log(e);
             alert("Could not load PDF. The file may be corrupted, or not a PDF file at all.");
-            await fetch('/cgi-bin/ack.sh');
-            await fetch('/cgi-bin/delete.sh?file=' + origFilename);
+            await fetch('/cgi-bin/ack.sh?key=' + key);
+            await fetch('/cgi-bin/delete.sh?file=' + origFilename + '&key=' + key);
             loader.classList.add('hide');
             return;
           }
@@ -1063,7 +1065,7 @@
           filenames.unshift(currentFile);
           await loadPdf(false);
 
-          await fetch('/cgi-bin/ack.sh');
+          await fetch('/cgi-bin/ack.sh?key=' + key);
 
           saveFile();
           hideMenu();
@@ -1217,7 +1219,7 @@
           // ourselves.
           // const controller = new AbortController()
           // setTimeout(() => { controller.abort(); }, 1000);
-          const response = await fetch('/cgi-bin/save.sh?file=' + currentFile, {
+          const response = await fetch('/cgi-bin/save.sh?file=' + currentFile + '&key=' + key, {
             method: 'POST',
             body: lastSave,
             // signal: controller.signal

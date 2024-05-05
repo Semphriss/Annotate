@@ -7,6 +7,6 @@ It uses Mozilla's [PDF.js](https://mozilla.github.io/pdf.js/) library.
 
 ## License
 
-Copyright (C) 2022  Semphris
+Copyright (C) 2022-2024 Semphris
 
 Licensed under the Apache Software License 2.0
