@@ -440,6 +440,20 @@
               }
               loader.classList.add('hide');
             });
+
+            elem.addEventListener('click', async (e) => {
+              elem.isTouching = false;
+              loader.classList.remove('hide');
+              const response = await fetch('/cgi-bin/get.sh?file=' + file + '&key=' + key);
+              const data = await response.text();
+              currentFile = file;
+              if (await parseAll(data)) {
+                hideMenu();
+                saveFile();
+              }
+              loader.classList.add('hide');
+            });
+
             filelist.appendChild(elem);
           }
           settings.classList.remove('selected');
