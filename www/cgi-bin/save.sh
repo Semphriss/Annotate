@@ -13,6 +13,7 @@ FILENAME="$(echo "$QUERY_STRING" | tr '&' '\n' | grep -E "^file=.*" | head -1 | 
 
 if [ "${REQUEST_METHOD^^}" = "POST" ] && [ ! "$FILENAME" = "" ] && [ ! "$FILENAME" = "cgi-bin" ]; then
   mkdir -p $HOME/.local/share/annotate/
+  # FIXME: `cat` never quits, probably stdin isn't closed by python after the body is received
   cat > $HOME/.local/share/annotate/$FILENAME
 fi
 

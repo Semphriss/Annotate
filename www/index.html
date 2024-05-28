@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Annotate</title>
     <style>
       html, body {
@@ -17,14 +17,11 @@
         box-shadow: 0 4px 10px black;
         margin: 15px;
         width: calc(100% - 30px);
-      }
-
-      #loadfile {
-        display: block;
-        margin: auto;
+        background: white;
       }
 
       #pages {
+        overflow: scroll;
         margin-bottom: 64px;
       }
 
@@ -320,34 +317,12 @@
        * JavaScript code in this page
        */
 
-      const key = window.location.search.replace(/^.*key=([a-zA-Z0-9]+).*$/i, "$1");
-
       var pdfjsLib = window['pdfjs-dist/build/pdf'];
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.js';
-
-      const pagesContainer = document.getElementById('pages');
-      const loader = document.getElementById('loading');
-
-      var currentPdf = null;
-      var currentFile = '';
-      var pdfCanvases = [];
-      var docPages = [];
-      var currentTool = null;
-      var zoom = 1.0;
-      var filenames = [];
     </script>
-    <script src="js/elements/stroke.js"></script>
-    <script src="js/tools/eraser.js"></script>
-    <script src="js/tools/pen.js"></script>
-    <script src="js/document.js"></script>
-    <script src="js/load.js"></script>
-    <script src="js/menu.js"></script>
-    <script src="js/save.js"></script>
-    <script src="js/serializer.js"></script>
-    <script src="js/toolbox.js"></script>
-    <script>
-      // Initial script
-      showMenu();
+    <script type="module">
+      import './js/toolbox.mjs';
+      import './js/main.mjs';
     </script>
   </body>
 </html>
