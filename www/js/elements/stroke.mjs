@@ -15,10 +15,9 @@ export class StrokeElement {
     if (this.points.length === 0)
       return;
 
-    const dims = page.getDims();
-    const scaleX = dims.width;
-    const scaleY = dims.height;
-    const scaleW = page.getScale().x;
+    const scaleX = ctx.canvas.width;
+    const scaleY = ctx.canvas.height;
+    const scaleW = ctx.canvas.width / page.getBaseDims().width;
 
     ctx.save();
     ctx.globalAlpha *= this.opacity / (this.erasing ? 2 : 1);
