@@ -7,6 +7,7 @@ const filelist = document.getElementById('filelist');
 const loadfile = document.getElementById('loadfile');
 const loading = document.getElementById('loading');
 const menu = document.getElementById('tool-menu');
+const share = document.getElementById('tool-share');
 const pages = document.getElementById('pages');
 const pdflist = document.getElementById('pdflist');
 const settings = document.getElementById('settings');
@@ -186,6 +187,11 @@ menu.addEventListener('click', () => {
     });
     doc.save();
   }
+});
+
+share.addEventListener('click', () => {
+  alert('Sharing documents is not currently supported. Contributions are '
+        + 'welcome!');
 });
 
 // Auto-resize the canvas
