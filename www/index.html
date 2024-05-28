@@ -319,6 +319,13 @@
 
       var pdfjsLib = window['pdfjs-dist/build/pdf'];
       pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.js';
+
+      window.addEventListener('error', (e) => {
+        console.log(e);
+        alert('A fatal error occured. Please restart Annotate'
+              + ' as soon as possible.\n\nError: '
+              + `${e.message} (${e.filename}:${e.lineno}:${e.colno})`);
+      });
     </script>
     <script type="module">
       import './js/toolbox.mjs';
