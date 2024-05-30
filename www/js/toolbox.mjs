@@ -52,16 +52,19 @@ export function setTool(button, tool) {
   button.classList.add("selected");
 }
 
+const globalPencilTool = new PencilTool();
 toolPencil.addEventListener('click', e => {
-  setTool(toolPencil, new PencilTool());
+  setTool(toolPencil, globalPencilTool);
 });
 
+const globalHighlighterTool = new HighlighterTool();
 toolHighlighter.addEventListener('click', e => {
-  setTool(toolHighlighter, new HighlighterTool());
+  setTool(toolHighlighter, globalHighlighterTool);
 });
 
+const globalEraserTool = new EraserTool();
 toolEraser.addEventListener('click', e => {
-  setTool(toolEraser, new EraserTool());
+  setTool(toolEraser, globalEraserTool);
 });
 
 toolNone.addEventListener('click', e => {
