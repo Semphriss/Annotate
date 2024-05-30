@@ -16,6 +16,12 @@
 import { ToolHandler } from './tool_handler.mjs';
 import { StrokeElement } from './elements/stroke.mjs';
 
+
+
+
+import { PDFDocument } from '../pdf-lib.esm.min.js';
+
+
 /**
  * A single page of a Document.
  */
@@ -172,5 +178,21 @@ export class DocumentPage {
     }
 
     return data;
+  }
+
+  async exportPdf(pdf, originalPdf) {
+    let currPage;
+
+    if (this.pdfPage && originalPdf) {
+      const [copy] = await pdf.copyPages(originalPdf, [this.pdfPage.index - 1]);
+      currPage = pdf.addPage(copy);
+    } else {
+      const dims = this.getBaseDims();
+      currPage = pdf.addPage([ dims.width, dims.height ]);
+    }
+
+    for (const elem of this.elements) {
+      await elem.exportPdf(currPage);
+    }
   }
 }

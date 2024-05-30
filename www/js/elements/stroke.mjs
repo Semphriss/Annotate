@@ -1,3 +1,16 @@
+import { LineCapStyle, rgb } from '../../pdf-lib.esm.min.js';
+
+const colorToRGB = (colorKeyword) => {
+  const div = document.createElement('div');
+  div.style.color = colorKeyword;
+  document.body.appendChild(div);
+  const rgbStr = window.getComputedStyle(div).color;
+  document.body.removeChild(div);
+
+  // Is the computed style always like 'rgb(<R>, <G>, <B>)'?
+  return rgb(...rgbStr.match(/[0-9]+/gi).map(i => parseInt(i) / 255));
+}
+
 /**
  * A stroke element, drawn by a pencil, highlighter, or similar.
  */
@@ -84,5 +97,31 @@ export class StrokeElement {
   save() {
     // FIXME: This saves things it shouldn't, like this.erasing
     return StrokeElement.ID + ',' + btoa(JSON.stringify(this));
+  }
+
+  async exportPdf(page) {
+    if (this.points.length === 0)
+      return;
+
+    const scale = page.getSize();
+    const scaleX = scale.width;
+    const scaleY = scale.height;
+
+    for (let i = 1; i < this.points.length; i++) {
+      const p1 = this.points[i - 1];
+      const p2 = this.points[i];
+
+      const P1 = { x: p1.x * scaleX, y: (1 - p1.y) * scaleY };
+      const P2 = { x: p2.x * scaleX, y: (1 - p2.y) * scaleY };
+
+      page.drawLine({
+        start: P1,
+        end: P2,
+        thickness: parseFloat(this.size),
+        lineCap: LineCapStyle.Round,
+        opacity: parseFloat(this.opacity),
+        color: colorToRGB(this.color)
+      });
+    }
   }
 }

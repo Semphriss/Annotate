@@ -204,9 +204,27 @@ menu.addEventListener('click', () => {
   }
 });
 
-share.addEventListener('click', () => {
-  alert('Sharing documents is not currently supported. Contributions are '
-        + 'welcome!');
+share.addEventListener('click', async () => {
+  if (!doc) {
+    alert('Attempt to export no document (this shouldn\'t be happening)');
+    return
+  }
+
+  loading.classList.remove('hide');
+
+  try {
+    const pdfBase64 = await doc.exportPdf();
+
+    const a = document.createElement('a');
+    a.href = 'data:application/pdf;base64,' + pdfBase64;
+    a.download = doc.name + '.pdf';
+    a.click();
+  } catch (e) {
+    console.error(e);
+    alert('Could not export document: ' + e.toString());
+  }
+
+  loading.classList.add('hide');
 });
 
 // Auto-resize the canvas

@@ -17,6 +17,7 @@ import { DocumentPage } from './document_page.mjs';
 import { Pdf } from './pdf.mjs';
 import { Job } from './job.mjs';
 import { saveFile } from './file_manager.mjs';
+import { PDFDocument } from '../pdf-lib.esm.min.js';
 
 function Uint8ArrayToBase64(arr) {
   var binary = '';
@@ -161,5 +162,18 @@ export class Document {
     for (const cb of this.saveCbs) {
       cb(needsRerun);
     }
+  }
+
+  async exportPdf() {
+    const pdfDoc = await PDFDocument.create();
+    const originalPdf = (!this.pdf) ? null
+                        : await PDFDocument.load(await this.pdf.getData());
+
+    for (const page of this.pages) {
+      await page.exportPdf(pdfDoc, originalPdf);
+    }
+
+    // Serialize the PDFDocument to bytes (a Uint8Array)
+    return Uint8ArrayToBase64(await pdfDoc.save());
   }
 }
