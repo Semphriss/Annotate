@@ -49,6 +49,16 @@ export class PencilTool {
         this.size = sizeInput.value;
       });
 
+      sizeInput.addEventListener('click', () => {
+        sizeInput.value = '';
+      });
+
+      sizeInput.addEventListener('keypress', (e) => {
+        if (e.keyCode == 10 || e.keyCode == 13) {
+          sizeInput.blur();
+        }
+      });
+
       const sizeLabel = document.createElement('span');
       sizeLabel.innerText = 'Size';
       sizeLabel.classList.add('toolbar-label');
