@@ -1,34 +1,16 @@
 const picker = document.getElementById('color-picker');
 const pickerframe = document.getElementById('color-picker-frame');
 const pickertab = document.getElementById('color-picker-table');
-const pickerok = document.getElementById('color-picker-ok');
-const pickercurrent = document.getElementById('color-picker-current');
 
-let curCol = null;
 let curRes = null;
 
 /* To be treated like an async function */
 export function pickColor(col) {
   return new Promise((res, rej) => {
-    selectCol(col);
     curRes = res;
     picker.classList.remove('color-picker-hidden');
   });
 }
-
-function selectCol(col) {
-  curCol = col;
-  pickercurrent.style.backgroundColor = col;
-}
-
-pickerok.addEventListener('click', () => {
-  if (curRes) {
-    curRes(curCol);
-  }
-  curRes = null;
-  curCol = null;
-  picker.classList.add('color-picker-hidden');
-});
 
 // Tapping outside the frame cancels
 picker.addEventListener('click', () => {
@@ -36,7 +18,6 @@ picker.addEventListener('click', () => {
     curRes(null);
   }
   curRes = null;
-  curCol = null;
   picker.classList.add('color-picker-hidden');
 });
 
@@ -146,7 +127,11 @@ for (const row of colors) {
     const td = document.createElement('td');
     td.style.backgroundColor = col;
     td.addEventListener('click', () => {
-      selectCol(col);
+      if (curRes) {
+        curRes(col);
+      }
+      curRes = null;
+      picker.classList.add('color-picker-hidden');
     });
     pickertab.appendChild(td);
   }
