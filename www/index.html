@@ -123,7 +123,6 @@
         display: block;
         height: 180px;
         width: calc(100% - 20px);
-        background-color: #0007;
         margin: 10px;
       }
 
@@ -248,6 +247,63 @@
       .tool.selected {
         background: #7777;
       }
+
+      #color-picker {
+        background: #0007;
+        opacity: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 50;
+        transition: 0.25s opacity;
+      }
+
+      #color-picker.color-picker-hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #color-picker-frame {
+        background: white;
+        border: 1px outset #777;
+        border-radius: 4px;
+        padding: 8px;
+        transition: 0.25s transform;
+        transform: scale(1);
+        overflow: scroll;
+        max-height: calc(100% - 32px);
+        max-width: calc(100% - 32px);
+      }
+
+      #color-picker.color-picker-hidden #color-picker-frame {
+        transform: scale(0);
+      }
+
+      #color-picker-table td {
+        height: 2rem;
+        width: 3rem;
+        border-radius: 4px;
+      }
+
+      #color-picker-current {
+        display: inline-block;
+        height: 2rem;
+        width: 3rem;
+        float: right;
+        border-radius: 4px;
+      }
+
+      .color-button {
+        display: inline-block;
+        height: 2rem;
+        width: 3rem;
+        border-radius: 4px;
+      }
     </style>
   </head>
   <body>
@@ -276,6 +332,16 @@
         </button>
       </div>
       <div id="toolbar-extended">
+      </div>
+    </div>
+    <div id="color-picker" class="color-picker-hidden">
+      <div id="color-picker-frame">
+        <table id="color-picker-table">
+        </table>
+        <div>
+          <div id="color-picker-current"></div>
+          <button id="color-picker-ok">OK</button>
+        </div>
       </div>
     </div>
     <div id="loading" class="hide"><div class="spinner"></div></div>
@@ -330,6 +396,7 @@
     </script>
     <script type="module">
       import './js/toolbox.mjs';
+      import './js/color_picker.mjs';
       import './js/main.mjs';
     </script>
   </body>

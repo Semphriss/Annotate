@@ -19,7 +19,7 @@ export class StrokeElement {
 
   points = [];
   size = 3;
-  color = 'black';
+  color = 'hsl(0 0% 0%)';
   opacity = 1;
 
   erasing = false;

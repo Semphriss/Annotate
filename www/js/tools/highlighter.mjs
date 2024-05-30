@@ -1,4 +1,5 @@
 import { StrokeElement } from '../elements/stroke.mjs';
+import { pickColor } from '../color_picker.mjs';
 
 /**
  * A highlighter, drawing transparent strokes.
@@ -6,15 +7,21 @@ import { StrokeElement } from '../elements/stroke.mjs';
 export class HighlighterTool {
   /* StrokeElement */ currentStroke = null;
 
-  color = 'yellow';
+  color = 'hsl(60 80% 50%)';
   size = 24;
 
   createConfigPanel(container) {
-    const colorInput = document.createElement('input');
-    colorInput.type = 'text';
-    colorInput.value = this.color;
-    colorInput.addEventListener('blur', () => {
-      this.color = colorInput.value;
+    const colorPicker = document.createElement('div');
+    colorPicker.classList.add('color-button');
+    colorPicker.style.backgroundColor = this.color;
+    colorPicker.addEventListener('click', async () => {
+      const newCol = await pickColor(this.color);
+
+      if (!newCol)
+        return;
+
+      this.color = newCol;
+      colorPicker.style.backgroundColor = this.color;
     });
 
     const sizeInput = document.createElement('input');
@@ -24,7 +31,7 @@ export class HighlighterTool {
       this.size = sizeInput.value;
     });
 
-    container.appendChild(colorInput);
+    container.appendChild(colorPicker);
     container.appendChild(sizeInput);
   }
 
