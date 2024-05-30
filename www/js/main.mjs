@@ -18,6 +18,7 @@ import { Document } from './document.mjs';
 import { DelayJob } from './job.mjs';
 
 const addempty = document.getElementById('addempty');
+const docname = document.getElementById('doc-name');
 const filelist = document.getElementById('filelist');
 const loadfile = document.getElementById('loadfile');
 const loading = document.getElementById('loading');
@@ -31,6 +32,17 @@ let files = [];
 let doc = null;
 let editing = false;
 
+function setDocument(newDoc) {
+  doc = newDoc;
+
+  if (doc) {
+    docname.value = doc.name;
+    document.title = 'Annotate | ' + doc.name;
+  } else {
+    document.title = 'Annotate';
+  }
+}
+
 async function refreshFileList() {
   files = await listFiles();
   renderMenu();
@@ -43,7 +55,7 @@ async function openDocument(file) {
 
   try {
     const data = await openFile(file);
-    doc = await Document.fromSaveData(data, pages, file);
+    setDocument(await Document.fromSaveData(data, pages, file));
 
     loading.classList.add('hide');
     pdflist.classList.add('hide');
@@ -152,7 +164,7 @@ addempty.addEventListener('click', () => {
   }
 
   pages.innerHTML = '';
-  doc = Document.fromEmpty(pages, file);
+  setDocument(Document.fromEmpty(pages, file));
 
   loading.classList.add('hide');
   pdflist.classList.add('hide');
@@ -177,7 +189,7 @@ loadfile.addEventListener('change', async () => {
     const data = event.target.result;
 
     try {
-      doc = await Document.fromPdfData(data, pages, file);
+      setDocument(await Document.fromPdfData(data, pages, file));
 
       loading.classList.add('hide');
       pdflist.classList.add('hide');
@@ -200,7 +212,7 @@ menu.addEventListener('click', () => {
         return;
 
       pages.innerHTML = '';
-      doc = null;
+      setDocument(null);
 
       showMenu();
     });
@@ -231,6 +243,22 @@ share.addEventListener('click', async () => {
     console.error(e);
     alert('Could not export document: ' + e.toString());
   }
+
+  loading.classList.add('hide');
+});
+
+docname.addEventListener('blur', async () => {
+  if (!doc) {
+    return;
+  }
+
+  loading.classList.remove('hide');
+
+  const newname = docname.value.replace(/[^a-z0-9_-]+/gi, '_');
+
+  await renameFile(doc.name, newname);
+  doc.name = newname;
+  docname.value = newname;
 
   loading.classList.add('hide');
 });

@@ -342,9 +342,38 @@
       button, .button-like, input {
         outline: none !important;
       }
+
+      #doc-title {
+        background: #dde;
+        border-bottom: 1px solid #aac;
+        box-shadow: 0 0 16px #0007;
+        height: 48px;
+        width: 100%;
+        display: flex;
+        position: fixed;
+        justify-content: center;
+        align-items: center;
+        color: #000a;
+      }
+
+      #doc-name {
+        display: inline-block;
+        width: 100%;
+        text-align: center;
+        border: none;
+        background: none;
+        font-size: 22px;
+      }
+
+      #doc-name:focus {
+        background: #fff7;
+      }
     </style>
   </head>
   <body>
+    <div id="doc-title">
+      <input id="doc-name" />
+    </div>
     <div id="pages"></div>
     <div id="toolbox">
       <div id="toolbar-container">
