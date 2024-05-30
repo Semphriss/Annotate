@@ -23,29 +23,22 @@ async function action(name, args, body = null) {
     url += `&${encodeURIComponent(k)}=${encodeURIComponent(v)}`;
   }
 
-  // FIXME: The CGI server (Python) never reports when the body is fully sent,
-  // resulting in a hanging connection. This is an ugly hack to work around
-  // that issue.
-  const controller = new AbortController();
-  setTimeout(() => { controller.abort(); }, 1000); // Should be enough...?
+  const response = await fetch(url, {
+    method: (body !== null) ? 'POST' : 'GET',
+    body: body
+  });
 
-  try
-  {
-    const response = await fetch(url, {
-      method: (body !== null) ? 'POST' : 'GET',
-      body: body,
-      signal: controller.signal
-    });
-
-    return await response.text();
-  } catch(e) {
-    return "";
-  }
+  return await response.text();
 }
 
 export async function saveFile(filename, data) {
   // files[filename] = data;
-  await action('save', { file: filename }, data);
+
+  // FIXME: The CGI server (Python) never reports when the body is fully sent,
+  // resulting in a hanging connection. The length is sent as a query parameter
+  // so that the CGI script knows when to stop reading. The Content-Length
+  // header is not accessible from the script.
+  await action('save', { file: filename, length: data.length }, data);
 }
 
 export async function listFiles() {
