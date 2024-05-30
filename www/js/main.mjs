@@ -133,6 +133,10 @@ async function showMenu() {
   loading.classList.add('hide');
 }
 
+export async function saveCurrentDoc() {
+  return await doc.save();
+}
+
 // Bind various buttons
 addempty.addEventListener('click', () => {
   loading.classList.remove('hide');

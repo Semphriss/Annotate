@@ -1,4 +1,5 @@
 import { StrokeElement } from '../elements/stroke.mjs';
+import { saveCurrentDoc } from '../main.mjs';
 
 /**
  * An eraser, to erase elements.
@@ -73,6 +74,7 @@ export class EraserTool {
 
     page.setTempElement(null);
     this.currentStroke = null;
+    saveCurrentDoc();
     return true;
   }
 

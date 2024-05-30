@@ -1,5 +1,6 @@
 import { StrokeElement } from '../elements/stroke.mjs';
 import { pickColor } from '../color_picker.mjs';
+import { saveCurrentDoc } from '../main.mjs';
 
 /**
  * A highlighter, drawing transparent strokes.
@@ -90,6 +91,7 @@ export class HighlighterTool {
     page.addElement(this.currentStroke);
     page.setTempElement(null);
     this.currentStroke = null;
+    saveCurrentDoc();
     return true;
   }
 
