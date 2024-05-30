@@ -120,10 +120,44 @@
       }
 
       #toolbar-extended {
-        display: block;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        overflow-x: scroll;
         height: 180px;
         width: calc(100% - 20px);
         margin: 10px;
+      }
+
+      .toolbar-panel {
+        width: 64px;
+        height: 64px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .toolbar-label {
+        color: #777;
+        font-size: 12px;
+      }
+
+      .toolbar-number-wheel {
+        font-size: 32px;
+        border: none;
+        background: none;
+        width: 62px;
+        height: 32px;
+        text-align: center;
+      }
+
+      .toolbar-number-wheel::-webkit-inner-spin-button,
+      .toolbar-number-wheel::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
       }
 
       #pdflist {
@@ -285,24 +319,28 @@
       }
 
       #color-picker-table td {
-        height: 2rem;
-        width: 3rem;
+        height: 32px;
+        width: 48px;
         border-radius: 4px;
       }
 
       #color-picker-current {
         display: inline-block;
-        height: 2rem;
-        width: 3rem;
+        height: 32px;
+        width: 48px;
         float: right;
         border-radius: 4px;
       }
 
       .color-button {
         display: inline-block;
-        height: 2rem;
-        width: 3rem;
+        height: 32px;
+        width: 48px;
         border-radius: 4px;
+      }
+
+      button, .button-like, input {
+        outline: none !important;
       }
     </style>
   </head>

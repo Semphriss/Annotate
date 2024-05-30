@@ -9,14 +9,27 @@ export class EraserTool {
   size = 16;
 
   createConfigPanel(container) {
-    const sizeInput = document.createElement('input');
-    sizeInput.type = 'number';
-    sizeInput.value = this.size;
-    sizeInput.addEventListener('blur', () => {
-      this.size = sizeInput.value;
-    });
+    const sizePanel = document.createElement('div');
+    sizePanel.classList.add('toolbar-panel');
 
-    container.appendChild(sizeInput);
+    {
+      const sizeInput = document.createElement('input');
+      sizeInput.classList.add('toolbar-number-wheel');
+      sizeInput.type = 'number';
+      sizeInput.value = this.size;
+      sizeInput.addEventListener('blur', () => {
+        this.size = sizeInput.value;
+      });
+
+      const sizeLabel = document.createElement('span');
+      sizeLabel.innerText = 'Size';
+      sizeLabel.classList.add('toolbar-label');
+
+      sizePanel.appendChild(sizeInput);
+      sizePanel.appendChild(sizeLabel);
+    }
+
+    container.appendChild(sizePanel);
   }
 
   begin(page, x, y) {

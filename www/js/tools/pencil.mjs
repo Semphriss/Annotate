@@ -11,28 +11,53 @@ export class PencilTool {
   size = 3;
 
   createConfigPanel(container) {
-    const colorPicker = document.createElement('div');
-    colorPicker.classList.add('color-button');
-    colorPicker.style.backgroundColor = this.color;
-    colorPicker.addEventListener('click', async () => {
-      const newCol = await pickColor(this.color);
+    const colorPanel = document.createElement('div');
+    colorPanel.classList.add('toolbar-panel');
 
-      if (!newCol)
-        return;
-
-      this.color = newCol;
+    {
+      const colorPicker = document.createElement('div');
+      colorPicker.classList.add('color-button');
       colorPicker.style.backgroundColor = this.color;
-    });
+      colorPicker.addEventListener('click', async () => {
+        const newCol = await pickColor(this.color);
 
-    const sizeInput = document.createElement('input');
-    sizeInput.type = 'number';
-    sizeInput.value = this.size;
-    sizeInput.addEventListener('blur', () => {
-      this.size = sizeInput.value;
-    });
+        if (!newCol)
+          return;
 
-    container.appendChild(colorPicker);
-    container.appendChild(sizeInput);
+        this.color = newCol;
+        colorPicker.style.backgroundColor = this.color;
+      });
+
+      const colorLabel = document.createElement('span');
+      colorLabel.innerText = 'Color';
+      colorLabel.classList.add('toolbar-label');
+
+      colorPanel.appendChild(colorPicker);
+      colorPanel.appendChild(colorLabel);
+    }
+
+    const sizePanel = document.createElement('div');
+    sizePanel.classList.add('toolbar-panel');
+
+    {
+      const sizeInput = document.createElement('input');
+      sizeInput.classList.add('toolbar-number-wheel');
+      sizeInput.type = 'number';
+      sizeInput.value = this.size;
+      sizeInput.addEventListener('blur', () => {
+        this.size = sizeInput.value;
+      });
+
+      const sizeLabel = document.createElement('span');
+      sizeLabel.innerText = 'Size';
+      sizeLabel.classList.add('toolbar-label');
+
+      sizePanel.appendChild(sizeInput);
+      sizePanel.appendChild(sizeLabel);
+    }
+
+    container.appendChild(colorPanel);
+    container.appendChild(sizePanel);
   }
 
   begin(page, x, y) {
