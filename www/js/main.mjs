@@ -110,6 +110,11 @@ function renderMenu() {
       const input = document.createElement('input');
       input.value = file;
       input.addEventListener('blur', () => renameDocument(file, input.value));
+      input.addEventListener('keypress', (e) => {
+        if (e.keyCode == 10 || e.keyCode == 13) {
+          input.blur();
+        }
+      });
 
       li.appendChild(delBtn);
       li.appendChild(input);
