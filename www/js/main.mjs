@@ -207,7 +207,11 @@ menu.addEventListener('click', () => {
 share.addEventListener('click', async () => {
   if (!doc) {
     alert('Attempt to export no document (this shouldn\'t be happening)');
-    return
+    return;
+  }
+
+  if (!confirm('Would you like to export this document as PDF?')) {
+    return;
   }
 
   loading.classList.remove('hide');
