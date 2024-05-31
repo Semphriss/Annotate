@@ -17,6 +17,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        arch: [amd64, arm64, armhf]
+
     steps:
       - uses: actions/checkout@v3
         with:
@@ -26,7 +30,9 @@ jobs:
         run: pip3 install --user --upgrade clickable-ut
 
       - name: Build
-        run: clickable build --output .
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: clickable build --arch $ARCH --output .
 
       - name: Generate variables
         id: filename
@@ -35,7 +41,7 @@ jobs:
         run: |
           GIT_VERSION="$(git describe --tags --always)"
           echo "version=$GIT_VERSION" >> $GITHUB_OUTPUT
-          echo "zipname=annotate-$GIT_VERSION" >> $GITHUB_OUTPUT
+          echo "zipname=annotate-$ARCH-$GIT_VERSION" >> $GITHUB_OUTPUT
 
       - name: Upload package
         uses: actions/upload-artifact@v2

@@ -1,5 +1,4 @@
-clickable_minimum_required: 7.1.2
-builder: pure
+clickable_minimum_required: 8.0.0
+builder: cmake
 kill: webapp-container*
 framework: ubuntu-sdk-20.04
-skip_review: true

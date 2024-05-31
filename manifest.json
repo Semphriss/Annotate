@@ -1,7 +1,7 @@
 {
     "name": "annotate.semphris",
     "description": "View and annotate your PDF files",
-    "architecture": "all",
+    "architecture": "@CLICK_ARCH@",
     "title": "Annotate",
     "hooks": {
         "annotate": {
@@ -10,7 +10,7 @@
             "content-hub": "annotate-contenthub.json"
         }
     },
-    "version": "0.1.0",
+    "version": "0.1.1",
     "maintainer": "Semphris <semphris@protonmail.com>",
     "framework" : "ubuntu-sdk-20.04"
 }
