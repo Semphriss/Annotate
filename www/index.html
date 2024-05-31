@@ -23,6 +23,7 @@
       #pages {
         overflow: scroll;
         margin-bottom: 64px;
+        margin-top: 32px;
       }
 
       #loading {
@@ -76,6 +77,19 @@
         align-items: center;
         justify-content: flex-start;
         padding: 5px;
+      }
+
+      #toolbox::before {
+        content: '';
+        color: transparent;
+        pointer-events: none;
+        display: inline-block;
+        position: absolute;
+        left: calc(50% - 64px);
+        right: calc(50% - 64px);
+        top: 2px;
+        border-top: 3px double #777;
+        mask: linear-gradient(to right, #0000, #ffff 25%, #ffff 75%, #0000);
       }
 
       #toolbar-container {
@@ -339,10 +353,11 @@
         background: #dde;
         border-bottom: 1px solid #aac;
         box-shadow: 0 0 16px #0007;
-        height: 48px;
+        height: 32px;
         width: 100%;
         display: flex;
         position: fixed;
+        top: 0;
         justify-content: center;
         align-items: center;
         color: #000a;
@@ -354,7 +369,7 @@
         text-align: center;
         border: none;
         background: none;
-        font-size: 22px;
+        font-size: 18px;
       }
 
       #doc-name:focus {
