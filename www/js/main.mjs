@@ -13,15 +13,16 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import { openFile, listFiles, renameFile, deleteFile } from './file_manager.mjs';
+import { openFile, listFiles, renameFile, deleteFile, importFile, exportFile }
+  from './file_manager.mjs';
 import { Document } from './document.mjs';
 import { DelayJob } from './job.mjs';
 
 const addempty = document.getElementById('addempty');
 const docname = document.getElementById('doc-name');
 const filelist = document.getElementById('filelist');
-const loadfile = document.getElementById('loadfile');
 const loading = document.getElementById('loading');
+const loadpdf = document.getElementById('load-pdf');
 const menu = document.getElementById('tool-menu');
 const share = document.getElementById('tool-share');
 const pages = document.getElementById('pages');
@@ -180,32 +181,30 @@ settings.addEventListener('click', () => {
   renderMenu();
 });
 
-loadfile.addEventListener('change', async () => {
-  if (loadfile.files.length === 0)
-    return;
+loadpdf.addEventListener('click', async () => {
+  loading.classList.remove('hide');
 
-  const file = loadfile.files[0].name.replace(/[^a-z0-9_-]+/gi, '_');
-
-  var reader = new FileReader();
-  reader.onload = async function(event) {
-    loading.classList.remove('hide');
-
-    pages.innerHTML = '';
-    const data = event.target.result;
+  try {
+    const file = await importFile();
 
     try {
-      setDocument(await Document.fromPdfData(data, pages, file));
+      pages.innerHTML = '';
 
-      loading.classList.add('hide');
+      const name = file.name.replace(/[^a-z0-9_-]+/gi, '_');
+      const data = file.data;
+
+      setDocument(await Document.fromPdfData(data, pages, name));
+
       pdflist.classList.add('hide');
-    } catch(e) {
+    } catch (e) {
       console.error(e);
       alert('Could not load PDF: ' + e.toString());
-      loading.classList.add('hide');
     }
-  };
+  } catch(e) {
+    // The user interrupted the import file
+  }
 
-  reader.readAsBinaryString(loadfile.files[0]);
+  loading.classList.add('hide');
 });
 
 menu.addEventListener('click', () => {
@@ -239,11 +238,7 @@ share.addEventListener('click', async () => {
 
   try {
     const pdfBase64 = await doc.exportPdf();
-
-    const a = document.createElement('a');
-    a.href = 'data:application/pdf;base64,' + pdfBase64;
-    a.download = doc.name + '.pdf';
-    a.click();
+    await exportFile(doc.name + '.pdf', pdfBase64);
   } catch (e) {
     console.error(e);
     alert('Could not export document: ' + e.toString());

@@ -33,11 +33,6 @@ async function action(name, args, body = null) {
 
 export async function saveFile(filename, data) {
   // files[filename] = data;
-
-  // FIXME: The CGI server (Python) never reports when the body is fully sent,
-  // resulting in a hanging connection. The length is sent as a query parameter
-  // so that the CGI script knows when to stop reading. The Content-Length
-  // header is not accessible from the script.
   await action('save', { file: filename, length: data.length }, data);
 }
 
@@ -60,4 +55,38 @@ export async function renameFile(filename, newfilename) {
   // files[newfilename] = files[filename];
   // delete files[filename];
   await action('rename', { file: filename, newname: newfilename });
+}
+
+export async function exportFile(filename, data) {
+  const a = document.createElement('a');
+  a.href = 'data:application/pdf;base64,' + data;
+  a.download = filename;
+  a.click();
+}
+
+/* To be treated as async */
+export function importFile() {
+  return new Promise((res, rej) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/pdf';
+
+    input.addEventListener('change', async () => {
+      if (input.files.length === 0) {
+        rej();
+        return;
+      }
+
+      const file = input.files[0].name;
+
+      var reader = new FileReader();
+      reader.onload = (event) => {
+        res({ name: file, data: event.target.result });
+      };
+
+      reader.readAsBinaryString(input.files[0]);
+    });
+
+    input.click();
+  });
 }
