@@ -266,6 +266,12 @@ docname.addEventListener('blur', async () => {
   loading.classList.add('hide');
 });
 
+docname.addEventListener('keypress', (e) => {
+  if (e.keyCode == 10 || e.keyCode == 13) {
+    docname.blur();
+  }
+});
+
 // Auto-resize the canvas
 const resizeJob = new DelayJob(() => { if (doc) doc.refresh(); });
 window.addEventListener('resize', () => void resizeJob.run());
