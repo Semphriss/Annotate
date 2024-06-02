@@ -195,6 +195,9 @@ loadpdf.addEventListener('click', async () => {
 
       setDocument(await Document.fromPdfData(data, pages, name));
 
+      // Necessary to add the entry in the saved files
+      await doc.save();
+
       pdflist.classList.add('hide');
     } catch (e) {
       console.error(e);
