@@ -16,12 +16,6 @@
 import { ToolHandler } from './tool_handler.mjs';
 import { StrokeElement } from './elements/stroke.mjs';
 
-
-
-
-import { PDFDocument } from '../pdf-lib.esm.min.js';
-
-
 /**
  * A single page of a Document.
  */
