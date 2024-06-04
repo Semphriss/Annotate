@@ -64,11 +64,11 @@ export class Document {
     // Special case: freshly imported files have no pages; generate them
     if (dataPages.filter(p => p.length !== 0).length === 0 && that.pdf) {
       for (let i = 1; i <= that.pdf.getNumPages(); i++) {
-        that.addPage(DocumentPage.fromPdfPage(await that.pdf.getPage(i)));
+        that.addPage(DocumentPage.fromPdfPage(that.pdf, i, container));
       }
     } else {
       for (const dataPage of dataPages.filter(p => p.length !== 0)) {
-        that.addPage(await DocumentPage.fromSaveData(dataPage, that.pdf));
+        that.addPage(DocumentPage.fromSaveData(dataPage, that.pdf, container));
       }
     }
 
@@ -86,7 +86,7 @@ export class Document {
     that.name = name;
 
     for (let i = 1; i <= that.pdf.getNumPages(); i++) {
-      that.addPage(DocumentPage.fromPdfPage(await that.pdf.getPage(i)));
+      that.addPage(DocumentPage.fromPdfPage(that.pdf, i, container));
     }
 
     return that;
@@ -101,7 +101,7 @@ export class Document {
     that.pdf = null;
     that.container = container;
     that.name = name;
-    that.addPage(DocumentPage.fromEmpty());
+    that.addPage(DocumentPage.fromEmpty(container));
 
     return that;
   }
@@ -110,9 +110,6 @@ export class Document {
    * Adds a page to the document at the specified position.
    */
   addPage(page, position = -1) {
-    this.container.appendChild(page.getCanvas());
-    page.refresh();
-
     if (position < 0) {
       this.pages.push(page);
     } else {
@@ -154,16 +151,28 @@ export class Document {
     await saveFile(this.name, serialized);
   }
 
+  /**
+   * Call cb each time the document is saved. The first and only parameter is
+   * true if there will be another invocation soon (the document will save
+   * again) and false otherwise.
+   */
   onSaved(cb) {
     this.saveCbs.push(cb);
   }
 
+  /**
+   * Call the callbacks supplied by onSaved(). This function should be
+   * considered private.
+   */
   notifyOnSaved(needsRerun) {
     for (const cb of this.saveCbs) {
       cb(needsRerun);
     }
   }
 
+  /**
+   * Export the document to a PDF document.
+   */
   async exportPdf() {
     const pdfDoc = await PDFDocument.create();
     const originalPdf = (!this.pdf) ? null

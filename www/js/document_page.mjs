@@ -21,12 +21,16 @@ import { StrokeElement } from './elements/stroke.mjs';
  */
 export class DocumentPage {
   /* PdfPage? */ pdfPage = null;
+  /* index */ index = -1;
   /* HTMLCanvasElement */ canvas = document.createElement('canvas');
   /* { width, height } */ baseDims = {};
   /* Element[] */ elements = [];
   /* Element? */ tempElement = null;
 
-  static async fromSaveData(data, pdf) {
+  /**
+   * Load a document page from save data.
+   */
+  static fromSaveData(data, pdf, container) {
     const d = data.split('\t');
 
     if (d.length !== 4) {
@@ -38,13 +42,13 @@ export class DocumentPage {
 
     // index might be NaN in case of malformed document
     if (index >= 0) {
-      doc = DocumentPage.fromPdfPage(await pdf.getPage(index));
+      doc = DocumentPage.fromPdfPage(pdf, index, container);
       d.shift();
       d.shift();
     } else {
       let width = parseInt(d.shift());
       let height = parseInt(d.shift());
-      doc = DocumentPage.fromEmpty({ width, height });
+      doc = DocumentPage.fromEmpty(container, { width, height });
     }
 
     for (const elementData of d.shift().split(';').filter(e => e.length)) {
@@ -58,35 +62,58 @@ export class DocumentPage {
     return doc;
   }
 
-  static fromPdfPage(pdfPage) {
+  /**
+   * Create a Document page from a page in a PDF file.
+   */
+  static fromPdfPage(pdf, index, container) {
     const that = new DocumentPage();
 
-    that.pdfPage = pdfPage;
-    that.pdfPage.onRenderReady((() => { that.draw(); }));
-    const viewport = that.pdfPage.getDims();
-    that.baseDims.width = viewport.width;
-    that.baseDims.height = viewport.height;
-    that.init();
+    container.appendChild(that.canvas);
+
+    // Temporary default values (before the PDF page data is fetched)
+    that.baseDims.width = 1920;
+    that.baseDims.height = 1080;
+    that.adjustSize();
+
+    that.index = index;
+
+    // Function not async so that the caller can get a valid DocumentPage
+    // without waiting for it to load
+    (async () => {
+      that.pdfPage = await pdf.getPage(index);
+
+      const viewport = that.pdfPage.getBaseDims();
+      that.baseDims.width = viewport.width;
+      that.baseDims.height = viewport.height;
+
+      that.pdfPage.onRenderReady((() => {
+        that.draw();
+      }));
+
+      that.refresh();
+    })();
+
+    ToolHandler.bindPage(that);
 
     return that;
   }
 
-  static fromEmpty(dims = { width: 1920, height: 1080 }) {
+  /**
+   * Create a new, empty Document page.
+   */
+  static fromEmpty(container, dims = { width: 1920, height: 1080 }) {
     const that = new DocumentPage();
+
+    container.appendChild(that.canvas);
 
     that.pdfPage = null;
     that.baseDims.width = dims.width;
     that.baseDims.height = dims.height;
-    that.init();
+    that.adjustSize();
+
+    ToolHandler.bindPage(that);
 
     return that;
-  }
-
-  init() {
-    this.canvas.width = this.baseDims.width;
-    this.canvas.height = this.baseDims.height;
-
-    ToolHandler.bindPage(this);
   }
 
   /**
@@ -119,6 +146,10 @@ export class DocumentPage {
     return this.canvas;
   }
 
+  /**
+   * Draw the current page on its canvas or, optionally, using a different ctx
+   * supplied in parameter.
+   */
   draw(ctx = this.canvas.getContext('2d')) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
@@ -135,12 +166,24 @@ export class DocumentPage {
     }
   }
 
-  refresh() {
+  /**
+   * Resize the canvas dimensions to fit the page. This function does not
+   * invoke any redrawing mechanism; usage of refresh() is preferred.
+   */
+  adjustSize() {
     const width = this.canvas.clientWidth * window.devicePixelRatio;
     const baseDims = this.getBaseDims();
 
     this.canvas.width = width;
     this.canvas.height = width / baseDims.width * baseDims.height;
+  }
+
+  /**
+   * Resize the canvas dimensions to fit the page, and redraws the page with
+   * the new dimensions.
+   */
+  refresh() {
+    this.adjustSize();
 
     if (this.pdfPage) {
       this.pdfPage.autoscale(this.canvas.width);
@@ -150,19 +193,30 @@ export class DocumentPage {
     }
   }
 
+  /**
+   * Add the given element to the page.
+   */
   addElement(element) {
     this.elements.push(element);
   }
 
+  /**
+   * Put an element on the page, but don't serialize it on save/export. There
+   * can be at most one temporary element. It is meant to be used by tools.
+   */
   setTempElement(element) {
     this.tempElement = element;
   }
 
+  /**
+   * Convert the data in this page into a string that can be passed to
+   * fromSaveData().
+   */
   serialize() {
     var data = "";
 
-    if (this.pdfPage) {
-      data += this.pdfPage.index + "\t\t\t";
+    if (this.index >= 0) {
+      data += this.index + "\t\t\t";
     } else {
       data += `-1\t${this.baseDims.width}\t${this.baseDims.height}\t`;
     }
@@ -174,11 +228,14 @@ export class DocumentPage {
     return data;
   }
 
+  /**
+   * Adds the corrent page to the PDF-LIB document.
+   */
   async exportPdf(pdf, originalPdf) {
     let currPage;
 
-    if (this.pdfPage && originalPdf) {
-      const [copy] = await pdf.copyPages(originalPdf, [this.pdfPage.index - 1]);
+    if (this.index >= 0 && originalPdf) {
+      const [copy] = await pdf.copyPages(originalPdf, [this.index - 1]);
       currPage = pdf.addPage(copy);
     } else {
       const dims = this.getBaseDims();
