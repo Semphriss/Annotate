@@ -198,8 +198,6 @@ void init_files()
 
   for (const auto& dir : std::filesystem::recursive_directory_iterator(path)) {
     if (std::filesystem::is_regular_file(dir)) {
-      std::cout << "Serving file: " << dir << "\n";
-
       std::ifstream ifs{dir.path().string()};
       std::string contents(std::istreambuf_iterator<char>(ifs), {});
 
@@ -393,38 +391,40 @@ int main()
       FAIL("Couldn't accept");
     }
 
-    do {
-      read_len = read(connfd, buffer, sizeof(buffer));
-      if (read_len < 0) {
-        FAIL("Couldn't read");
+    try {
+      do {
+        read_len = read(connfd, buffer, sizeof(buffer));
+        if (read_len < 0) {
+          FAIL("Couldn't read");
+        }
+      } while (!resume_parse(req, buffer, read_len));
+
+      size_t qpos = req.url.find("?");
+      std::string realname = req.url.substr(0, qpos);
+
+      if (g_scripts.contains(realname)) {
+        req.query = parse_query(req.url.substr(qpos + 1));
+        const auto res = g_scripts.at(realname)(req);
+        write(connfd, res.data(), res.size());
+      } else if (g_static_files.contains(realname)) {
+        std::string contents = g_static_files.at(realname);
+        std::stringstream res;
+        res << "HTTP/1.1 200 OK\r\n"
+            << "Content-Type: " << get_mime(realname) << "\r\n"
+            << "Content-Length: " << contents.size() << "\r\n"
+            << "\r\n"
+            << contents;
+        std::string response = res.str();
+
+        write(connfd, response.data(), response.size());
+      } else {
+        std::stringstream res;
+        res << "HTTP/1.1 404 Not found\r\n\r\n";
+        std::string response = res.str();
+        write(connfd, response.data(), response.size());
       }
-    } while (!resume_parse(req, buffer, read_len));
-
-    size_t qpos = req.url.find("?");
-    std::string realname = req.url.substr(0, qpos);
-
-    std::cout << req.method << " " << realname << std::endl;
-
-    if (g_scripts.contains(realname)) {
-      req.query = parse_query(req.url.substr(qpos + 1));
-      const auto res = g_scripts.at(realname)(req);
-      write(connfd, res.data(), res.size());
-    } else if (g_static_files.contains(realname)) {
-      std::string contents = g_static_files.at(realname);
-      std::stringstream res;
-      res << "HTTP/1.1 200 OK\r\n"
-          << "Content-Type: " << get_mime(realname) << "\r\n"
-          << "Content-Length: " << contents.size() << "\r\n"
-          << "\r\n"
-          << contents;
-      std::string response = res.str();
-
-      write(connfd, response.data(), response.size());
-    } else {
-      std::stringstream res;
-      res << "HTTP/1.1 404 Not found\r\n\r\n";
-      std::string response = res.str();
-      write(connfd, response.data(), response.size());
+    } catch (const std::exception& e) {
+      std::cerr << "Couldn't treat request: " << e.what() << std::endl;
     }
 
     close(connfd);
