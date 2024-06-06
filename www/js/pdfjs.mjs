@@ -13,5 +13,5 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-export const pdfjsLib = window['pdfjs-dist/build/pdf'];
+export const { pdfjsLib } = globalThis;
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.js';
