@@ -156,7 +156,7 @@ export async function saveCurrentDoc() {
 }
 
 // Bind various buttons
-addempty.addEventListener('click', () => {
+addempty.addEventListener('click', async () => {
   loading.classList.remove('hide');
 
   // Generate a unique name based on timestamp
@@ -171,6 +171,9 @@ addempty.addEventListener('click', () => {
 
   pages.innerHTML = '';
   setDocument(Document.fromEmpty(pages, file));
+
+  // Necessary to add the entry in the saved files
+  await doc.save();
 
   loading.classList.add('hide');
   pdflist.classList.add('hide');
