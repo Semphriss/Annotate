@@ -8,7 +8,7 @@ highlight and annotate your PDF files.
 It uses Mozilla's [PDF.js](https://mozilla.github.io/pdf.js/) library as well
 as [PDF-LIB](https://pdf-lib.js.org/) for exporting.
 
-[![OpenStore](https://open-store.io/badges/en_US.svg)](https://open-store.io/app/annotate)
+[![OpenStore](https://open-store.io/badges/en_US.png)](https://open-store.io/app/annotate.semphris)
 
 ## Building
 
