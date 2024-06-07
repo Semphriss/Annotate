@@ -15,6 +15,7 @@
 
 import { pdfjsLib } from './pdfjs.mjs';
 import { PdfPage } from './pdf_page.mjs';
+import { Base64ToUint8Array } from './b64.mjs';
 
 /**
  * A PDF document.
@@ -22,11 +23,15 @@ import { PdfPage } from './pdf_page.mjs';
 export class Pdf {
   /* pdfjs document handle */ doc;
   /* PdfDocumentPage[] */ pages = [];
+  /* string */ cachedB64Data = null;
 
-  static async fromData(data) {
+  static async fromData(b64data) {
+    const data = Base64ToUint8Array(b64data);
+
     const that = new Pdf();
 
     that.doc = await pdfjsLib.getDocument({ data: data }).promise;
+    that.cachedB64Data = b64data;
 
     return that;
   }
@@ -47,6 +52,10 @@ export class Pdf {
     }
 
     return this.pages[num];
+  }
+
+  getB64Data() {
+    return this.cachedB64Data;
   }
 
   async getData() {

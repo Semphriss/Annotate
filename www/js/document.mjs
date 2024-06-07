@@ -17,21 +17,8 @@ import { DocumentPage } from './document_page.mjs';
 import { Pdf } from './pdf.mjs';
 import { Job } from './job.mjs';
 import { saveFile } from './file_manager.mjs';
+import { Uint8ArrayToBase64 } from './b64.mjs';
 import { PDFDocument } from '../pdf-lib.esm.min.js';
-
-function Uint8ArrayToBase64(arr) {
-  var binary = '';
-
-  for (const byte of arr) {
-    binary += String.fromCharCode(byte);
-  }
-
-  return window.btoa(binary);
-}
-
-function Base64ToUint8Array(b64) {
-  return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-}
 
 /**
  * A document, as managed by Annotate.
@@ -55,7 +42,7 @@ export class Document {
     const pdfData = dataPages.shift();
 
     if (pdfData.length !== 0) {
-      that.pdf = await Pdf.fromData(Base64ToUint8Array(pdfData));
+      that.pdf = await Pdf.fromData(pdfData);
     }
 
     that.container = container;
@@ -141,7 +128,7 @@ export class Document {
     let serialized = '';
 
     if (this.pdf) {
-      serialized += Uint8ArrayToBase64(await this.pdf.getData());
+      serialized += this.pdf.getB64Data();
     }
 
     for (const page of this.pages) {
