@@ -42,7 +42,7 @@ export class Document {
     const pdfData = dataPages.shift();
 
     if (pdfData.length !== 0) {
-      that.pdf = await Pdf.fromData(pdfData);
+      that.pdf = await Pdf.fromBase64(pdfData);
     }
 
     that.container = container;
@@ -68,7 +68,7 @@ export class Document {
   static async fromPdfData(data, container, name) {
     const that = new Document();
 
-    that.pdf = await Pdf.fromData(data);
+    that.pdf = await Pdf.fromDataString(data);
     that.container = container;
     that.name = name;
 

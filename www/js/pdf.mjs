@@ -15,7 +15,7 @@
 
 import { pdfjsLib } from './pdfjs.mjs';
 import { PdfPage } from './pdf_page.mjs';
-import { Base64ToUint8Array } from './b64.mjs';
+import { Uint8ArrayToBase64, Base64ToUint8Array } from './b64.mjs';
 
 /**
  * A PDF document.
@@ -25,9 +25,19 @@ export class Pdf {
   /* PdfDocumentPage[] */ pages = [];
   /* string */ cachedB64Data = null;
 
-  static async fromData(b64data) {
-    const data = Base64ToUint8Array(b64data);
+  static async fromDataString(data) {
+    return await Pdf.fromDataAndBase64(data, btoa(data));
+  }
 
+  static async fromDataUint8Array(data) {
+    return await Pdf.fromDataAndBase64(data, Uint8ArrayToBase64(data));
+  }
+
+  static async fromBase64(b64data) {
+    return await Pdf.fromDataAndBase64(Base64ToUint8Array(b64data), b64data);
+  }
+
+  static async fromDataAndBase64(data, b64data) {
     const that = new Pdf();
 
     that.doc = await pdfjsLib.getDocument({ data: data }).promise;
