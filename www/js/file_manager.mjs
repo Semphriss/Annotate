@@ -87,6 +87,8 @@ export function importFile() {
       reader.readAsBinaryString(input.files[0]);
     });
 
+    input.addEventListener('cancel', rej);
+
     input.click();
   });
 }
