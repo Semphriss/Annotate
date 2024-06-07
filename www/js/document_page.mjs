@@ -59,6 +59,9 @@ export class DocumentPage {
       }
     }
 
+    if (index < 0)
+      doc.draw();
+
     return doc;
   }
 
