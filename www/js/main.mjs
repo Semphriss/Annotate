@@ -185,10 +185,14 @@ settings.addEventListener('click', () => {
 });
 
 loadpdf.addEventListener('click', async () => {
-  loading.classList.remove('hide');
+  // WORKAROUND: Canceling does not work in Morph, so to avoid an eternal
+  // wait, don't show the loader at all. See commit f23dd07.
+  //loading.classList.remove('hide');
 
   try {
     const file = await importFile();
+
+    loading.classList.remove('hide'); // <- Workaround
 
     try {
       pages.innerHTML = '';
@@ -206,11 +210,13 @@ loadpdf.addEventListener('click', async () => {
       console.error(e);
       alert('Could not load PDF: ' + e.toString());
     }
+
+    loading.classList.add('hide'); // <- Workaround
   } catch(e) {
     // The user interrupted the import file
   }
 
-  loading.classList.add('hide');
+  //loading.classList.add('hide'); // <- Workaround
 });
 
 menu.addEventListener('click', () => {
