@@ -1,10 +1,14 @@
 # Annotate
 
+[![Build and upload](https://github.com/Semphriss/Annotate/actions/workflows/build.yml/badge.svg)](https://github.com/Semphriss/Annotate/actions/workflows/build.yml)
+
 **Annotate** is a lightweight HTML5 application that lets you draw, write,
 highlight and annotate your PDF files.
 
 It uses Mozilla's [PDF.js](https://mozilla.github.io/pdf.js/) library as well
 as [PDF-LIB](https://pdf-lib.js.org/) for exporting.
+
+[![OpenStore](https://open-store.io/badges/en_US.svg)](https://open-store.io/app/annotate)
 
 ## Building
 
