@@ -49,6 +49,9 @@ jobs:
           name: ${{ steps.filename.outputs.zipname }}
           path: annotate.semphris_*.click
 
+        # FIXME: If a commit and its tag are pushed at the same time,
+        # there will be two drafts created and the archives will be
+        # uploaded to one of them, but not necessarily the same.
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
