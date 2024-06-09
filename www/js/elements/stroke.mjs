@@ -55,20 +55,35 @@ export class StrokeElement {
   /**
    * @returns true if a segment from `lastPoint` to `point` with thickness
    * `range` intersects with this element.
-   *
-   * This function is particularly ugly. I should refactor it when I can.
    */
   touches(page, point, lastPoint, range) {
-    for (var i = 0; i < this.points.length; i++) {
-      const myPoint = this.points[i];
-      const lineWidth = this.size * page.getScale().x;
-      const dist = Math.sqrt(Math.pow((myPoint.x - point.x)
-                              * page.canvas.width, 2)
-                  + Math.pow((myPoint.y - point.y)
-                              * page.canvas.height, 2));
+    const scaleX = page.getCanvas().width;
+    const scaleY = page.getCanvas().height;
+    const scaleW = page.getCanvas().width / page.getBaseDims().width;
 
-      if (dist < (lineWidth + range) / 2)
-        return true;
+    for (var i = 0; i < this.points.length; i++) {
+      // Test point collision (if circles with middle <point> and radius
+      // <thickness> collide) with both points
+
+      for (const pt of [point, lastPoint]) {
+
+        const ptx = pt.x * scaleX;
+        const pty = pt.y * scaleY;
+        const x = this.points[i].x * scaleX;
+        const y = this.points[i].y * scaleY;
+
+        const len = (range + this.size) * scaleW / 2;
+
+        if (Math.sqrt(Math.pow(ptx - x, 2) + Math.pow(pty - y, 2)) < len) {
+          return true;
+        }
+      }
+
+      // Test segment collision (does not account for thickness)
+
+      // Segment is point[i] -> point[i - 1], skip if no point[i - 1]
+      if (i === 0)
+        continue;
 
       // Taken from https://stackoverflow.com/questions/9043805/test-if-two-lines-intersect-javascript-function
       function intersects(a,b,c,d,p,q,r,s){
@@ -77,11 +92,20 @@ export class StrokeElement {
                 0<(λ=((s-q)*(r-a)+(p-r)*(s-b))/𝐴)&&λ<1&&0<γ&&γ<1)
       }
 
-      if (lastPoint && i > 0 && intersects(myPoint.x, myPoint.y,
-            this.points[i - 1].x, this.points[i - 1].y, point.x, point.y,
-            lastPoint.x, lastPoint.y))
+      const ptx1 = point.x * scaleX;
+      const pty1 = point.y * scaleY;
+      const ptx2 = lastPoint.x * scaleX;
+      const pty2 = lastPoint.y * scaleY;
+      const x1 = this.points[i].x * scaleX;
+      const y1 = this.points[i].y * scaleY;
+      const x2 = this.points[i - 1].x * scaleX;
+      const y2 = this.points[i - 1].y * scaleY;
+
+      if (intersects(ptx1, pty1, ptx2, pty2, x1, y1, x2, y2)) {
         return true;
+      }
     }
+
     return false;
   }
 

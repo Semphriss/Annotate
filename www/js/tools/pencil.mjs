@@ -46,7 +46,7 @@ export class PencilTool {
       sizeInput.type = 'number';
       sizeInput.value = this.size;
       sizeInput.addEventListener('blur', () => {
-        this.size = sizeInput.value;
+        this.size = parseInt(sizeInput.value);
       });
 
       sizeInput.addEventListener('click', () => {
