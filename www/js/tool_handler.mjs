@@ -31,6 +31,7 @@ function offset(e) {
  */
 export class ToolHandler {
   /* Tool */ static currentTool = null;
+  /* timestamp */ static timeBegin = null;
 
   static setTool(tool) {
     ToolHandler.currentTool = tool;
@@ -55,10 +56,28 @@ export class ToolHandler {
         return;
       }
 
-      if (fn !== 'end' && fn !== 'cancel' && e.touches.length != 1) {
-        if (ToolHandler.currentTool.cancel(page))
-          page.draw();
-        return;
+      if (fn === 'begin' && e.touches.length === 1) {
+        ToolHandler.timeBegin = +new Date();
+      }
+
+      if (fn !== 'end' && fn !== 'cancel' && e.touches.length !== 1) {
+        // if ToolHandler.timeBegin is still null, this evaluates to false
+        if (ToolHandler.timeBegin && +new Date() - ToolHandler.timeBegin < 1000) {
+          ToolHandler.timeBegin = null;
+
+          if (ToolHandler.currentTool.cancel(page)) {
+            page.draw();
+          }
+
+          return;
+        } else {
+          // e.touches[>0] won't be used anyways
+          //e.touches.length = 1;
+        }
+      }
+
+      if (e.touches.length === 0) {
+        ToolHandler.timeBegin = null;
       }
 
       e.preventDefault();
