@@ -49,6 +49,14 @@ jobs:
           name: ${{ steps.filename.outputs.zipname }}
           path: annotate.semphris_*.click
 
+      - name: Upload to the OpenStore
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          OPENSTORE_API_KEY: ${{ secrets.OPENSTORE_API_KEY }}
+        shell: bash
+        run: |
+          clickable publish -- "$(git tag -l "$(git describe --tags --exact-match)" --format='%(contents)')"
+
         # FIXME: If a commit and its tag are pushed at the same time,
         # there will be two drafts created and the archives will be
         # uploaded to one of them, but not necessarily the same.
