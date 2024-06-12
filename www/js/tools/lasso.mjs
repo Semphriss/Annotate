@@ -88,9 +88,12 @@ export class LassoTool {
           elem.offset(this.initialPoint.x - this.lastPoint.x,
                       this.initialPoint.y - this.lastPoint.y);
         }
+
+        page.setTempElement(null);
+        this.currentSelection = [];
+        this.currentBBox = null;
       }
-      page.setTempElement(null);
-      this.currentSelection = [];
+
       this.initialPoint = null;
       this.lastPoint = null;
       saveCurrentDoc();
@@ -109,8 +112,6 @@ export class LassoTool {
                     this.initialPoint.y - this.lastPoint.y);
       }
 
-      page.setTempElement(null);
-      this.currentSelection = [];
       this.initialPoint = null;
       this.lastPoint = null;
       return false;
