@@ -109,6 +109,79 @@ export class StrokeElement {
     return false;
   }
 
+  /**
+   * @returns true if this element is at least in part selected by the lasso.
+   */
+  isContained(page, lasso) {
+    const scaleX = page.getCanvas().width;
+    const scaleY = page.getCanvas().height;
+    const scaleW = page.getCanvas().width / page.getBaseDims().width;
+
+    // Strategy: A stroke is within a lasso if either:
+    // 1. A line from the lasso intersects (touches()) a line from the stroke,
+    // 2. ALL the points are within the lasso.
+
+    for (var i = 1; i < lasso.points.length; i++) {
+      if (this.touches(page, lasso.points[i], lasso.points[i - 1], 0)) {
+        return true;
+      }
+    }
+
+    if (this.points.length <= 0) {
+      // Shouldn't happen, but just in case (code below needs one point)
+      return false;
+    }
+
+    // Taken from https://stackoverflow.com/questions/22521982/check-if-point-is-inside-a-polygon
+    // and adapted to work with Annotate data.
+    function inside(point, vs) {
+      // ray-casting algorithm based on
+      // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
+
+      var x = point.x, y = point.y;
+
+      var inside = false;
+      for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+        var xi = vs[i].x, yi = vs[i].y;
+        var xj = vs[j].x, yj = vs[j].y;
+
+        var intersect = ((yi > y) != (yj > y))
+            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+      }
+
+      return inside;
+    };
+
+    return inside(this.points[0], lasso.points);
+  }
+
+  /**
+   * Move the stroke by this amount.
+   */
+  offset(x, y) {
+    for (const pt of this.points) {
+      pt.x += x;
+      pt.y += y;
+    }
+  }
+
+  /**
+   * @returns the bounding box for that element.
+   */
+  getBounds() {
+    let minx = 1.0, miny = 1.0, maxx = 0.0, maxy = 0.0;
+
+    for (const pt of this.points) {
+      if (minx > pt.x) minx = pt.x;
+      if (miny > pt.y) miny = pt.y;
+      if (maxx < pt.x) maxx = pt.x;
+      if (maxy < pt.y) maxy = pt.y;
+    }
+
+    return [ minx, miny, maxx, maxy ];
+  }
+
   addPoint(x, y) {
     this.points.push({ x, y });
   }

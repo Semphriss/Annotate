@@ -17,10 +17,12 @@ import { ToolHandler } from './tool_handler.mjs';
 import { HighlighterTool } from './tools/highlighter.mjs';
 import { PencilTool } from './tools/pencil.mjs';
 import { EraserTool } from './tools/eraser.mjs';
+import { LassoTool } from './tools/lasso.mjs';
 
 const toolPencil = document.getElementById('tool-pencil');
 const toolHighlighter = document.getElementById('tool-highlighter');
 const toolEraser = document.getElementById('tool-eraser');
+const toolLasso = document.getElementById('tool-lasso');
 const toolNone = document.getElementById('tool-hand');
 const configPanel = document.getElementById('toolbar-extended');
 const toolbox = document.getElementById('toolbox');
@@ -40,7 +42,7 @@ export function setTool(button, tool) {
   }
 
   const btns = [
-    toolPencil, toolHighlighter, toolEraser, toolNone
+    toolPencil, toolHighlighter, toolEraser, toolLasso, toolNone
   ];
 
   for (const btn of btns) {
@@ -65,6 +67,11 @@ toolHighlighter.addEventListener('click', e => {
 const globalEraserTool = new EraserTool();
 toolEraser.addEventListener('click', e => {
   setTool(toolEraser, globalEraserTool);
+});
+
+const globalLassoTool = new LassoTool();
+toolLasso.addEventListener('click', e => {
+  setTool(toolLasso, globalLassoTool);
 });
 
 toolNone.addEventListener('click', e => {
