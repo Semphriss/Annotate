@@ -10,7 +10,7 @@
             "content-hub": "annotate-contenthub.json"
         }
     },
-    "version": "1.0.1",
+    "version": "1.1.0",
     "maintainer": "Semphris <semphris@protonmail.com>",
     "framework" : "ubuntu-sdk-20.04"
 }
