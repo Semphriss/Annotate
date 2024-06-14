@@ -285,5 +285,75 @@ docname.addEventListener('keypress', (e) => {
 const resizeJob = new DelayJob(() => { if (doc) doc.refresh(); });
 window.addEventListener('resize', () => void resizeJob.run());
 
+// Zooming
+let currentZoom = 1.0;
+let currentLen = null;
+let currentPanMid = null;
+const scrollTarget = document.body.parentElement;
+
+pages.addEventListener('touchstart', e => {
+  if (e.touches.length == 2) {
+    const offset = { x: e.touches[0].pageX - e.touches[1].pageX,
+                     y: e.touches[0].pageY - e.touches[1].pageY };
+    currentLen = Math.sqrt(Math.pow(offset.x, 2) + Math.pow(offset.y, 2));
+
+    // All code below is to initialize currentPanMid for panning
+    const midpoint = { x: (e.touches[0].pageX + e.touches[1].pageX) / 2,
+                       y: (e.touches[0].pageY + e.touches[1].pageY) / 2 };
+    const currScroll = { x: scrollTarget.scrollLeft,
+                         y: scrollTarget.scrollTop };
+    const currScrollMid = { x: midpoint.x - currScroll.x,
+                            y: midpoint.y - currScroll.y };
+    currentPanMid = currScrollMid;
+  }
+});
+
+pages.addEventListener('touchmove', e => {
+  if (e.touches.length == 2 && currentLen) {
+    const offset = { x: e.touches[0].pageX - e.touches[1].pageX,
+                     y: e.touches[0].pageY - e.touches[1].pageY };
+    const newLen = Math.sqrt(Math.pow(offset.x, 2) + Math.pow(offset.y, 2));
+    const oldZoom = currentZoom;
+    currentZoom *= newLen / currentLen;
+    currentZoom = Math.max(currentZoom, 1.0);
+
+    // Without this midpoint math madness, zooming will send the user towards
+    // or away from the origin point at the complete top of the document.
+    const currScroll = { x: scrollTarget.scrollLeft,
+                         y: scrollTarget.scrollTop };
+    const newScroll = { x: currScroll.x * currentZoom / oldZoom,
+                        y: currScroll.y * currentZoom / oldZoom };
+
+    // The above is enough to zoom relatively to the top left corner of the
+    // screen, but we want to zoom relatively to the middle of the pinch.
+    const midpoint = { x: (e.touches[0].pageX + e.touches[1].pageX) / 2,
+                       y: (e.touches[0].pageY + e.touches[1].pageY) / 2 };
+    const currScrollMid = { x: midpoint.x - currScroll.x,
+                            y: midpoint.y - currScroll.y };
+    const newScrollMid = { x: currScrollMid.x * currentZoom / oldZoom,
+                           y: currScrollMid.y * currentZoom / oldZoom, };
+    const newMidOffset = { x: newScrollMid.x - currScrollMid.x,
+                           y: newScrollMid.y - currScrollMid.y };
+    newScroll.x += newMidOffset.x;
+    newScroll.y += newMidOffset.y;
+
+    // While we're at it, enable panning with two fingers.
+    newScroll.x -= currScrollMid.x - currentPanMid.x;
+    newScroll.y -= currScrollMid.y - currentPanMid.y;
+
+    currentLen = newLen;
+    currentPanMid = currScrollMid;
+    pages.style.width = (currentZoom * 100) + 'vw';
+    document.body.parentElement.scrollLeft = newScroll.x;
+    document.body.parentElement.scrollTop = newScroll.y;
+  }
+});
+
+pages.addEventListener('touchend', e => {
+  if (e.touches.length < 2) {
+    currentLen = null;
+  }
+});
+
 // Initialize the app
 showMenu();
