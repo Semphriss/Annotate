@@ -65,9 +65,17 @@ std::string SCRIPT_base64(std::string in)
   return out;
 }
 
+std::string genv(const std::string& v)
+{
+  const char *env = getenv(v.c_str());
+  if (!env)
+    throw v + ": Missing variable";
+  return env;
+}
+
 std::string HOME(const std::string& s)
 {
-  std::string home = getenv("HOME");
+  std::string home = genv("HOME");
   return home + s;
 }
 /*
@@ -102,7 +110,7 @@ void SCRIPT_clear_incoming()
 static std::unordered_map<std::string, std::string> g_static_files;
 static std::unordered_map<std::string, std::string(*)(const HTTPRequest&)> g_scripts = {
   { "/cgi-bin/list.sh", [] (const HTTPRequest& req) -> std::string {
-    if (!req.query.contains("key") || req.query.at("key") != getenv("ANNOTATE_KEY")) {
+    if (!req.query.contains("key") || req.query.at("key") != genv("ANNOTATE_KEY")) {
       return "HTTP/1.1 403 Forbidden\r\n\r\n";
     }
 
@@ -126,7 +134,7 @@ static std::unordered_map<std::string, std::string(*)(const HTTPRequest&)> g_scr
     return res.str();
   }},
   { "/cgi-bin/delete.sh", [] (const HTTPRequest& req) -> std::string {
-    if (!req.query.contains("key") || req.query.at("key") != getenv("ANNOTATE_KEY")) {
+    if (!req.query.contains("key") || req.query.at("key") != genv("ANNOTATE_KEY")) {
       return "HTTP/1.1 403 Forbidden\r\n\r\n";
     }
 
@@ -140,7 +148,7 @@ static std::unordered_map<std::string, std::string(*)(const HTTPRequest&)> g_scr
     return "HTTP/1.1 200 OK\r\n\r\n";
   }},
   { "/cgi-bin/get.sh", [] (const HTTPRequest& req) -> std::string {
-    if (!req.query.contains("key") || req.query.at("key") != getenv("ANNOTATE_KEY")) {
+    if (!req.query.contains("key") || req.query.at("key") != genv("ANNOTATE_KEY")) {
       return "HTTP/1.1 403 Forbidden\r\n\r\n";
     }
 
@@ -161,7 +169,7 @@ static std::unordered_map<std::string, std::string(*)(const HTTPRequest&)> g_scr
     return res.str();
   }},
   { "/cgi-bin/rename.sh", [] (const HTTPRequest& req) -> std::string {
-    if (!req.query.contains("key") || req.query.at("key") != getenv("ANNOTATE_KEY")) {
+    if (!req.query.contains("key") || req.query.at("key") != genv("ANNOTATE_KEY")) {
       return "HTTP/1.1 403 Forbidden\r\n\r\n";
     }
 
@@ -176,7 +184,7 @@ static std::unordered_map<std::string, std::string(*)(const HTTPRequest&)> g_scr
     return "HTTP/1.1 200 OK\r\n\r\n";
   }},
   { "/cgi-bin/save.sh", [] (const HTTPRequest& req) -> std::string {
-    if (!req.query.contains("key") || req.query.at("key") != getenv("ANNOTATE_KEY")) {
+    if (!req.query.contains("key") || req.query.at("key") != genv("ANNOTATE_KEY")) {
       return "HTTP/1.1 403 Forbidden\r\n\r\n";
     }
 
