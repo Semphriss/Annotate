@@ -146,6 +146,11 @@ toolbox.addEventListener('touchend', (e) => {
   toolboxLastMovement = NaN;
   toolboxMoving = false;
 
+  // Fix bug with tool settings remaining focumes when the toolbox is closed
+  if (!toolboxExpanded) {
+    document.activeElement.blur();
+  }
+
   toolbox.style.transform = toolboxExpanded ? 'translateY(-' + tbH + 'px)'
                                             : '';
 });
