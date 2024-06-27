@@ -94,6 +94,14 @@ export class Document {
   }
 
   /**
+   * Returns the list of all files in the document. Should be considered
+   * read-only.
+   */
+  getPages() {
+    return this.pages;
+  }
+
+  /**
    * Adds a page to the document at the specified position.
    */
   addPage(page, position = -1) {

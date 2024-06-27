@@ -117,4 +117,13 @@ export class LassoTool {
       return false;
     }
   }
+
+  reset() {
+    this.currentLasso = null;
+    this.currentSelection = [];
+    this.dragBeginTime = null;
+    this.lastPoint = null;
+    this.initialPoint = null;
+    this.currentBBox = null;
+  }
 }

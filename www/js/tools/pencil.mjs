@@ -112,4 +112,8 @@ export class PencilTool {
     this.currentStroke = null;
     return true;
   }
+
+  reset() {
+    this.currentStroke = null;
+  }
 }

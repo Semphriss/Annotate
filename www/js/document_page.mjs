@@ -212,6 +212,13 @@ export class DocumentPage {
   }
 
   /**
+   * Return the current temporary element.
+   */
+  getTempElement() {
+    return this.tempElement;
+  }
+
+  /**
    * Convert the data in this page into a string that can be passed to
    * fromSaveData().
    */

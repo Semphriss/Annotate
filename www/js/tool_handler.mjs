@@ -13,6 +13,8 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+import { doc } from './main.mjs';
+
 function offset(e) {
   if (!e) {
     return [];
@@ -34,6 +36,16 @@ export class ToolHandler {
   /* timestamp */ static timeBegin = null;
 
   static setTool(tool) {
+    if (ToolHandler.currentTool) {
+      ToolHandler.currentTool.reset();
+      for (const page of doc.getPages()) {
+        if (page.getTempElement()) {
+          page.setTempElement(null);
+          page.draw();
+        }
+      }
+    }
+
     ToolHandler.currentTool = tool;
   }
 

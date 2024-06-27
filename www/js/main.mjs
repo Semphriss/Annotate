@@ -30,7 +30,7 @@ const pdflist = document.getElementById('pdflist');
 const settings = document.getElementById('settings');
 
 let files = [];
-let doc = null;
+export let doc = null;
 let editing = false;
 
 function setDocument(newDoc) {

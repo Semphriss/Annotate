@@ -96,4 +96,8 @@ export class EraserTool {
     this.currentStroke = null;
     return true;
   }
+
+  reset() {
+    this.currentStroke = null;
+  }
 }
