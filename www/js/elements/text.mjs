@@ -1,4 +1,4 @@
-import { LineCapStyle, rgb } from '../../pdf-lib.esm.min.js';
+import { rgb } from '../../pdf-lib.esm.min.js';
 
 const colorToRGB = (colorKeyword) => {
   const div = document.createElement('div');
@@ -12,16 +12,21 @@ const colorToRGB = (colorKeyword) => {
 }
 
 /**
- * A stroke element, drawn by a pencil, highlighter, or similar.
+ * A text element, rendering text.
  */
-export class StrokeElement {
-  static ID = 'stroke';
+export class TextElement {
+  static ID = 'text';
 
   /* DocumentPage */ page;
-  points = [];
-  size = 3;
-  color = 'hsl(0 0% 0%)';
-  opacity = 1;
+  text = '';
+  font = 'serif';
+  size = 24;
+  lineHeight = 1.5;
+  color = 'black';
+  x = 0;
+  y = 0;
+  width = 0.2;
+  height = 0.2;
 
   erasing = false;
 
@@ -34,29 +39,35 @@ export class StrokeElement {
   }
 
   draw(ctx, page) {
-    if (this.points.length === 0)
-      return;
-
     const scaleX = ctx.canvas.width;
     const scaleY = ctx.canvas.height;
     const scaleW = ctx.canvas.width / page.getBaseDims().width;
 
     ctx.save();
-    ctx.globalAlpha *= this.opacity / (this.erasing ? 2 : 1);
 
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.lineWidth = scaleW * this.size;
-    ctx.strokeStyle = this.color;
+    ctx.globalAlpha *= this.erasing ? 0.5 : 1;
+    ctx.font = `${this.size * scaleW}px ${this.font}`;
+    ctx.fillStyle = this.color;
 
     ctx.beginPath();
-    ctx.moveTo(this.points[0].x * scaleX, this.points[0].y * scaleY);
+    ctx.rect(this.x * scaleX, this.y * scaleY, this.width * scaleX,
+             this.height * scaleY);
+    ctx.clip();
 
-    for (const point of this.points) {
-      ctx.lineTo(point.x * scaleX, point.y * scaleY);
+    let nDrawn = 0, nToBeDrawn = 0, vertOffset = this.size * scaleW;
+    while (nDrawn < this.text.length) {
+      let line = '';
+
+      while (ctx.measureText(line).width <= this.width * scaleX
+          && nToBeDrawn < this.text.length) {
+        nToBeDrawn++;
+        line = this.text.substring(nDrawn, nToBeDrawn);
+      }
+
+      ctx.fillText(line, this.x * scaleX, this.y * scaleY + vertOffset);
+      vertOffset += this.size * this.lineHeight * scaleW;
+      nDrawn = nToBeDrawn;
     }
-
-    ctx.stroke();
 
     ctx.restore();
   }
@@ -68,22 +79,30 @@ export class StrokeElement {
   touches(page, point, lastPoint, range) {
     const scaleX = page.getCanvas().width;
     const scaleY = page.getCanvas().height;
-    const scaleW = page.getCanvas().width / page.getBaseDims().width;
 
-    for (var i = 0; i < this.points.length; i++) {
-      // Test point collision (if circles with middle <point> and radius
-      // <thickness> collide) with both points
+    const xa = this.x * scaleX;
+    const ya = this.y * scaleY;
+    const xb = (this.x + this.width) * scaleX;
+    const yb = (this.y + this.height) * scaleY;
+
+    // Strategy: Copy the stroke.mjs implementation with the bounds as a path
+    const points = [
+      { x: xa, y: ya },
+      { x: xa, y: yb },
+      { x: xb, y: yb },
+      { x: xb, y: ya },
+      { x: xa, y: ya }
+    ];
+
+    for (var i = 0; i < points.length; i++) {
+      // Test either point being inside the area
 
       for (const pt of [point, lastPoint]) {
 
         const ptx = pt.x * scaleX;
         const pty = pt.y * scaleY;
-        const x = this.points[i].x * scaleX;
-        const y = this.points[i].y * scaleY;
 
-        const len = (range + this.size) * scaleW / 2;
-
-        if (Math.sqrt(Math.pow(ptx - x, 2) + Math.pow(pty - y, 2)) < len) {
+        if (ptx > xa && pty > ya && ptx < xb && pty < yb) {
           return true;
         }
       }
@@ -105,10 +124,10 @@ export class StrokeElement {
       const pty1 = point.y * scaleY;
       const ptx2 = lastPoint.x * scaleX;
       const pty2 = lastPoint.y * scaleY;
-      const x1 = this.points[i].x * scaleX;
-      const y1 = this.points[i].y * scaleY;
-      const x2 = this.points[i - 1].x * scaleX;
-      const y2 = this.points[i - 1].y * scaleY;
+      const x1 = points[i].x * scaleX;
+      const y1 = points[i].y * scaleY;
+      const x2 = points[i - 1].x * scaleX;
+      const y2 = points[i - 1].y * scaleY;
 
       if (intersects(ptx1, pty1, ptx2, pty2, x1, y1, x2, y2)) {
         return true;
@@ -124,21 +143,24 @@ export class StrokeElement {
   isContained(page, lasso) {
     const scaleX = page.getCanvas().width;
     const scaleY = page.getCanvas().height;
-    const scaleW = page.getCanvas().width / page.getBaseDims().width;
 
-    // Strategy: A stroke is within a lasso if either:
-    // 1. A line from the lasso intersects (touches()) a line from the stroke,
-    // 2. ALL the points are within the lasso.
+    // Strategy: Copy the stroke.mjs implementation with the bounds as a path
+    const x1 = this.x * scaleX;
+    const y1 = this.y * scaleY;
+    const x2 = (this.x + this.width) * scaleX;
+    const y2 = (this.y + this.height) * scaleY;
+    const points = [
+      { x: x1, y: y1 },
+      { x: x1, y: y2 },
+      { x: x2, y: y2 },
+      { x: x2, y: y1 },
+      { x: x1, y: y1 }
+    ];
 
     for (var i = 1; i < lasso.points.length; i++) {
       if (this.touches(page, lasso.points[i], lasso.points[i - 1], 0)) {
         return true;
       }
-    }
-
-    if (this.points.length <= 0) {
-      // Shouldn't happen, but just in case (code below needs one point)
-      return false;
     }
 
     // Taken from https://stackoverflow.com/questions/22521982/check-if-point-is-inside-a-polygon
@@ -162,76 +184,59 @@ export class StrokeElement {
       return inside;
     };
 
-    return inside(this.points[0], lasso.points);
+    return inside({ x: this.x, y: this.y }, lasso.points);
   }
 
   /**
-   * Move the stroke by this amount.
+   * Move the text by this amount.
    */
   offset(x, y) {
-    for (const pt of this.points) {
-      pt.x += x;
-      pt.y += y;
-    }
+    this.x += x;
+    this.y += y;
   }
 
   /**
    * @returns the bounding box for that element.
    */
   getBounds() {
-    let minx = 1.0, miny = 1.0, maxx = 0.0, maxy = 0.0;
-
-    for (const pt of this.points) {
-      if (minx > pt.x) minx = pt.x;
-      if (miny > pt.y) miny = pt.y;
-      if (maxx < pt.x) maxx = pt.x;
-      if (maxy < pt.y) maxy = pt.y;
-    }
-
-    return [ minx, miny, maxx, maxy ];
+    return [ this.x, this.y, this.x + this.width, this.y + this.height ];
   }
 
-  addPoint(x, y) {
-    this.points.push({ x, y });
+  /**
+   * @returns true if the given points is within the bbox, false otherwise.
+   */
+  hitsPt(x, y) {
+    const b = this.getBounds();
+    return b[0] < x && b[1] < y && b[2] > x && b[3] > y;
   }
 
   static load(data, page) {
-    const elemData = data.substring(StrokeElement.ID.length + 1);
-    return Object.assign(new StrokeElement(page), JSON.parse(atob(elemData)));
+    const elemData = data.substring(TextElement.ID.length + 1);
+    return Object.assign(new TextElement(page), JSON.parse(atob(elemData)));
   }
 
   save() {
-    return StrokeElement.ID + ',' + btoa(JSON.stringify({
-      points: this.points,
+    return TextElement.ID + ',' + btoa(JSON.stringify({
+      text: this.text,
+      font: this.font,
       size: this.size,
+      lineHeight: this.lineHeight,
       color: this.color,
-      opacity: this.opacity
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height
     }));
   }
 
   async exportPdf(page) {
-    if (this.points.length === 0)
-      return;
+    const { width, height } = page.getSize();
 
-    const scale = page.getSize();
-    const scaleX = scale.width;
-    const scaleY = scale.height;
-
-    for (let i = 1; i < this.points.length; i++) {
-      const p1 = this.points[i - 1];
-      const p2 = this.points[i];
-
-      const P1 = { x: p1.x * scaleX, y: (1 - p1.y) * scaleY };
-      const P2 = { x: p2.x * scaleX, y: (1 - p2.y) * scaleY };
-
-      page.drawLine({
-        start: P1,
-        end: P2,
-        thickness: parseFloat(this.size),
-        lineCap: LineCapStyle.Round,
-        opacity: parseFloat(this.opacity),
-        color: colorToRGB(this.color)
-      });
-    }
+    page.drawText(this.text, {
+      x: this.x * width,
+      y: (1 - this.y) * height,
+      size: this.size,
+      color: colorToRGB(this.color),
+    });
   }
 }

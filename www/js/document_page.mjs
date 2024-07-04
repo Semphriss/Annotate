@@ -15,6 +15,7 @@
 
 import { ToolHandler } from './tool_handler.mjs';
 import { StrokeElement } from './elements/stroke.mjs';
+import { TextElement } from './elements/text.mjs';
 
 /**
  * A single page of a Document.
@@ -53,7 +54,9 @@ export class DocumentPage {
 
     for (const elementData of d.shift().split(';').filter(e => e.length)) {
       if (elementData.startsWith(StrokeElement.ID + ',')) {
-        doc.elements.push(StrokeElement.load(elementData));
+        doc.elements.push(StrokeElement.load(elementData, doc));
+      } else if (elementData.startsWith(TextElement.ID + ',')) {
+        doc.elements.push(TextElement.load(elementData, doc));
       } else {
         throw "Unrecognised element";
       }
@@ -194,6 +197,13 @@ export class DocumentPage {
     } else {
       this.draw();
     }
+  }
+
+  /**
+   * Returns a list of elements on the page. Should be considered read-only.
+   */
+  getElements() {
+    return this.elements;
   }
 
   /**

@@ -4,10 +4,21 @@
  * This will never be fixed on a canvas, only used as a temporary element.
  */
 export class BBoxElement {
+  /* DocumentPage */ page;
   /* [ minx, miny, maxx, maxy ] */ boundsBox = [];
+  /* in ['lasso', 'text'] */ style = null;
 
-  constructor(minx, miny, maxx, maxy) {
+  constructor(page, minx, miny, maxx, maxy, style) {
+    this.page = page;
     this.boundsBox = [minx, miny, maxx, maxy];
+    this.style = style;
+    if (!['lasso', 'text'].includes(this.style)) {
+      throw `BBox: '${this.style}' not in ['lasso', 'text']`;
+    }
+  }
+
+  getPage() {
+    return this.page;
   }
 
   draw(ctx, page) {
@@ -21,14 +32,26 @@ export class BBoxElement {
     const maxy = this.boundsBox[3];
 
     ctx.save();
-    ctx.globalAlpha *= 0.5;
 
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = scaleW * 2;
-    ctx.strokeStyle = 'black';
-    ctx.setLineDash([scaleW * 16]);
-    ctx.fillStyle = '#0002';
+    switch(this.style) {
+      case 'lasso':
+        ctx.globalAlpha *= 0.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = scaleW * 2;
+        ctx.strokeStyle = 'black';
+        ctx.setLineDash([scaleW * 16]);
+        ctx.fillStyle = '#0002';
+        break;
+
+      case 'text':
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = scaleW * 2;
+        ctx.strokeStyle = 'black';
+        ctx.fillStyle = '#0000';
+        break;
+    }
 
     ctx.beginPath();
     ctx.moveTo(minx * scaleX, miny * scaleY);

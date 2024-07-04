@@ -32,7 +32,7 @@ export class LassoTool {
       this.initialPoint = { x, y };
       this.dragBeginTime = +new Date();
     } else {
-      this.currentLasso = new LassoElement();
+      this.currentLasso = new LassoElement(page);
 
       this.currentLasso.addPoint(x, y);
       page.setTempElement(this.currentLasso);
@@ -79,7 +79,8 @@ export class LassoTool {
         if (maxy < bbox[3]) maxy = bbox[3];
       }
 
-      this.currentBBox = new BBoxElement(minx, miny, maxx, maxy);
+      this.currentBBox = new BBoxElement(page, minx, miny, maxx, maxy,
+                                         'lasso');
       page.setTempElement(this.currentBBox);
       return true;
     } else {

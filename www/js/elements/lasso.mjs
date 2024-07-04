@@ -4,7 +4,16 @@
  * This will never be fixed on a canvas, only used as a temporary element.
  */
 export class LassoElement {
+  /* DocumentPage */ page;
   points = [];
+
+  constructor(page) {
+    this.page = page;
+  }
+
+  getPage() {
+    return this.page;
+  }
 
   draw(ctx, page) {
     if (this.points.length === 0)

@@ -75,7 +75,7 @@ export class PencilTool {
     if (this.currentStroke)
       return false;
 
-    this.currentStroke = new StrokeElement();
+    this.currentStroke = new StrokeElement(page);
     this.currentStroke.color = this.color;
     this.currentStroke.size = this.size;
 

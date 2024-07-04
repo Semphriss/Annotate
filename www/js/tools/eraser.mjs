@@ -47,7 +47,7 @@ export class EraserTool {
     if (this.currentStroke)
       return false;
 
-    this.currentStroke = new StrokeElement();
+    this.currentStroke = new StrokeElement(page);
     this.currentStroke.color = 'white';
     this.currentStroke.size = this.size;
 
