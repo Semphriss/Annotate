@@ -219,6 +219,7 @@ export class DocumentPage {
    */
   setTempElement(element) {
     this.tempElement = element;
+    this.draw();
   }
 
   /**

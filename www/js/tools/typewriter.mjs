@@ -200,7 +200,6 @@ export class TypewriterTool {
           page.elements = page.elements.filter(e => e !== currentText);
           page.setTempElement(null);
           this.select(page, null);
-          page.draw();
         });
 
         const deleteLabel = document.createElement('span');
@@ -317,12 +316,10 @@ export class TypewriterTool {
       if (this.currentTextBBox) {
         const page2 = this.currentTextBBox.getPage();
         page2.setTempElement(null);
-        page2.draw();
       }
 
       if (page) {
         page.setTempElement(null);
-        page.draw();
       }
 
       this.currentTextBBox = null;
@@ -333,7 +330,6 @@ export class TypewriterTool {
       this.currentTextBBox = new BBoxElement(page, ...elem.getBounds(),
                                             'text');
       page.setTempElement(this.currentTextBBox);
-      page.draw();
     }
 
     this.refreshPanel();
