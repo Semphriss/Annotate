@@ -77,8 +77,18 @@ toolLasso.addEventListener('click', e => {
   setTool(toolLasso, globalLassoTool);
 });
 
+let hasSentTypewriterWarning = false;
 const globalTypewriterTool = new TypewriterTool();
 toolTypewriter.addEventListener('click', e => {
+  if (!hasSentTypewriterWarning) {
+    alert('Please note that the typewriter tool is bare-bones and not yet '
+          + 'comfortable to use. It will be updated soon.\n\nTo edit a text '
+          + 'area, create or select an existing text area, open the toolbar '
+          + '(drag upwards) and tap the "Edit" button.\n\nIf you don\'t see '
+          + 'the edit button, make sure you have selected a text area.');
+    hasSentTypewriterWarning = true;
+  }
+
   setTool(toolTypewriter, globalTypewriterTool);
 });
 
