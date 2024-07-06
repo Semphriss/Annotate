@@ -314,12 +314,15 @@ export class TypewriterTool {
     this.endEdit();
 
     if (!elem) {
-      if (this.currentText) {
-        this.currentText.getPage().setTempElement(null);
+      if (this.currentTextBBox) {
+        const page2 = this.currentTextBBox.getPage();
+        page2.setTempElement(null);
+        page2.draw();
       }
 
       if (page) {
         page.setTempElement(null);
+        page.draw();
       }
 
       this.currentTextBBox = null;
@@ -330,6 +333,7 @@ export class TypewriterTool {
       this.currentTextBBox = new BBoxElement(page, ...elem.getBounds(),
                                             'text');
       page.setTempElement(this.currentTextBBox);
+      page.draw();
     }
 
     this.refreshPanel();
