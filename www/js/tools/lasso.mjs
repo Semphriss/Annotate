@@ -1,6 +1,7 @@
 import { LassoElement } from '../elements/lasso.mjs';
 import { BBoxElement } from '../elements/bbox.mjs';
 import { saveCurrentDoc } from '../main.mjs';
+import { historyAction } from '../history_manager.mjs';
 
 /**
  * If the drag lasted less than this many milliseconds, consider that the user
@@ -94,6 +95,19 @@ export class LassoTool {
         this.currentSelection = [];
         this.currentBBox = null;
       }
+
+      const ptA = { ...this.initialPoint };
+      const ptB = { ...this.lastPoint };
+      const elems = [ ...this.currentSelection ];
+      historyAction(() => {
+        for (const elem of elems) {
+          elem.offset(ptA.x - ptB.x, ptA.y - ptB.y);
+        }
+      }, () => {
+        for (const elem of elems) {
+          elem.offset(ptB.x - ptA.x, ptB.y - ptA.y);
+        }
+      }, [page]);
 
       this.initialPoint = null;
       this.lastPoint = null;

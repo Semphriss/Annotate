@@ -2,6 +2,7 @@ import { TextElement } from '../elements/text.mjs';
 import { BBoxElement } from '../elements/bbox.mjs';
 import { saveCurrentDoc } from '../main.mjs';
 import { pickColor } from '../color_picker.mjs';
+import { historyAction } from '../history_manager.mjs';
 
 /**
  * A typewriter, creating and editing text elements.
@@ -51,6 +52,17 @@ export class TypewriterTool {
       return;
 
     if (this.currentText) {
+      const txtElem = this.currentText;
+      const oldtxt = this.currentText.text;
+      const newtxt = this.textArea.value;
+      if (oldtxt !== newtxt) {
+        historyAction(() => {
+          txtElem.text = oldtxt;
+        }, () => {
+          txtElem.text = newtxt;
+        }, [this.currentText.getPage()]);
+      }
+
       this.currentText.text = this.textArea.value;
       this.currentText.getPage().draw();
     }
@@ -80,10 +92,19 @@ export class TypewriterTool {
         colorPicker.classList.add('color-button');
         colorPicker.style.backgroundColor = currentText.color;
         colorPicker.addEventListener('click', async () => {
+          const oldCol = this.currentText.color;
           const newCol = await pickColor(this.currentText.color);
 
           if (!newCol)
             return;
+
+          historyAction(() => {
+            currentText.color = oldCol;
+            colorPicker.style.backgroundColor = currentText.color;
+          }, () => {
+            currentText.color = newCol;
+            colorPicker.style.backgroundColor = currentText.color;
+          }, [this.currentText.getPage()]);
 
           currentText.color = newCol;
           colorPicker.style.backgroundColor = currentText.color;
@@ -106,7 +127,18 @@ export class TypewriterTool {
         sizeInput.type = 'number';
         sizeInput.value = currentText.size;
         sizeInput.addEventListener('blur', () => {
-          currentText.size = parseInt(sizeInput.value);
+          const oldSize = currentText.size;
+          const newSize = parseInt(sizeInput.value);
+
+          historyAction(() => {
+            currentText.size = oldSize;
+            sizeInput.value = oldSize;
+          }, () => {
+            currentText.size = newSize;
+            sizeInput.value = newSize;
+          }, [this.currentText.getPage()]);
+
+          currentText.size = newSize;
         });
 
         sizeInput.addEventListener('click', () => {
@@ -137,7 +169,18 @@ export class TypewriterTool {
         lhInput.value = currentText.lineHeight;
         lhInput.step = 'any';
         lhInput.addEventListener('blur', () => {
-          currentText.lineHeight = parseFloat(lhInput.value);
+          const oldHeight = currentText.lineHeight;
+          const newHeight = parseFloat(lhInput.value);
+
+          historyAction(() => {
+            currentText.lineHeight = oldHeight;
+            lhInput.value = oldHeight;
+          }, () => {
+            currentText.lineHeight = newHeight;
+            lhInput.value = newHeight;
+          }, [this.currentText.getPage()]);
+
+          currentText.lineHeight = newHeight;
         });
 
         lhInput.addEventListener('click', () => {
@@ -197,6 +240,13 @@ export class TypewriterTool {
             return;
 
           const page = currentText.getPage();
+
+          historyAction(() => {
+            page.addElement(currentText);
+          }, () => {
+            page.elements = page.elements.filter(e => e !== currentText);
+          }, [this.currentText.getPage()]);
+
           page.elements = page.elements.filter(e => e !== currentText);
           page.setTempElement(null);
           this.select(page, null);
@@ -384,6 +434,12 @@ export class TypewriterTool {
     // FIXME: If a text element is already selected but is on another page, the
     // bbox on that page will remain.
     this.select(page, elem);
+
+    historyAction(() => {
+      page.elements = page.elements.filter(e => e !== elem);
+    }, () => {
+      page.addElement(elem);
+    }, [page]);
 
     return true;
   }

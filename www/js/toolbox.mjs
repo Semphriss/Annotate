@@ -28,6 +28,7 @@ const toolTypewriter = document.getElementById('tool-typewriter');
 const toolNone = document.getElementById('tool-hand');
 const configPanel = document.getElementById('toolbar-extended');
 const toolbox = document.getElementById('toolbox');
+const toolbar = document.getElementById('toolbar-container');
 
 /**
  * Sets the currently selected tool.
@@ -104,6 +105,7 @@ var toolboxExpanded = false;
 var toolboxMoving = false;
 var toolboxOrigin = NaN;
 var toolboxLastY = NaN;
+var toolboxLastX = NaN;
 var toolboxLastMovement = NaN;
 
 // Toolbox height when open
@@ -118,6 +120,7 @@ toolbox.addEventListener('touchstart', (e) => {
 
   toolboxOrigin = e.touches[0].pageY;
   toolboxLastY = toolboxExpanded ? -tbH : 0;
+  toolboxLastX = e.touches[0].pageX;
 });
 
 toolbox.addEventListener('touchmove', (e) => {
@@ -125,6 +128,10 @@ toolbox.addEventListener('touchmove', (e) => {
     return;
 
   e.preventDefault();
+
+  // Re-enable horizontal scrolling
+  toolbar.scrollBy(toolboxLastX - e.touches[0].pageX, 0);
+  toolboxLastX = e.touches[0].pageX;
 
   const start = toolboxExpanded ? -tbH : 0;
   var offset = e.touches[0].pageY - toolboxOrigin;
@@ -161,6 +168,7 @@ toolbox.addEventListener('touchend', (e) => {
   }
   toolboxOrigin = NaN;
   toolboxLastY = NaN;
+  toolboxLastX = NaN;
   toolboxLastMovement = NaN;
   toolboxMoving = false;
 

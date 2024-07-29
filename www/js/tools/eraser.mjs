@@ -1,5 +1,6 @@
 import { StrokeElement } from '../elements/stroke.mjs';
 import { saveCurrentDoc } from '../main.mjs';
+import { historyAction } from '../history_manager.mjs';
 
 /**
  * An eraser, to erase elements.
@@ -80,7 +81,24 @@ export class EraserTool {
     if (!this.currentStroke)
       return false;
 
-    page.elements = page.elements.filter(e => !e.erasing);
+    const erasedElements = page.elements.filter(e => e.erasing);
+
+    for (const elem of erasedElements) {
+      elem.erasing = false;
+    }
+
+    // Don't push a history change if nothing was erased
+    if (erasedElements.length > 0) {
+      historyAction(() => {
+        for (const elem of erasedElements) {
+          page.addElement(elem);
+        }
+      }, () => {
+        page.elements = page.elements.filter(e => !erasedElements.includes(e));
+      }, [page]);
+    }
+
+    page.elements = page.elements.filter(e => !erasedElements.includes(e));
 
     page.setTempElement(null);
     this.currentStroke = null;

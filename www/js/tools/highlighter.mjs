@@ -1,6 +1,7 @@
 import { StrokeElement } from '../elements/stroke.mjs';
 import { pickColor } from '../color_picker.mjs';
 import { saveCurrentDoc } from '../main.mjs';
+import { historyAction } from '../history_manager.mjs';
 
 /**
  * A highlighter, drawing transparent strokes.
@@ -97,6 +98,13 @@ export class HighlighterTool {
   end(page) {
     if (!this.currentStroke)
       return false;
+
+    const elem = this.currentStroke;
+    historyAction(() => {
+      page.elements = page.elements.filter(e => e !== elem);
+    }, () => {
+      page.addElement(elem);
+    }, [page]);
 
     page.addElement(this.currentStroke);
     page.setTempElement(null);

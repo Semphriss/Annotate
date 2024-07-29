@@ -17,6 +17,7 @@ import { openFile, listFiles, renameFile, deleteFile, importFile, exportFile }
   from './file_manager.mjs';
 import { Document } from './document.mjs';
 import { DelayJob } from './job.mjs';
+import { historyClear } from './history_manager.mjs';
 
 const addempty = document.getElementById('addempty');
 const docname = document.getElementById('doc-name');
@@ -35,6 +36,7 @@ let editing = false;
 
 function setDocument(newDoc) {
   doc = newDoc;
+  historyClear();
 
   if (doc) {
     docname.value = doc.name;
@@ -350,8 +352,11 @@ pages.addEventListener('touchmove', e => {
 });
 
 pages.addEventListener('touchend', e => {
-  if (e.touches.length < 2) {
+  if (currentLen && e.touches.length < 2) {
     currentLen = null;
+     for (const page of doc.getPages()) {
+       page.refresh();
+     }
   }
 });
 
