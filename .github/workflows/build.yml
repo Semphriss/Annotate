@@ -42,7 +42,7 @@ jobs:
           echo "version=$(git describe --tags --always)" >> $GITHUB_OUTPUT
 
       - name: Upload package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           path: annotate.semphris_*.click
 
@@ -58,7 +58,7 @@ jobs:
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: ${{ steps.filename.outputs.version }}
           files: annotate.semphris_*.click
