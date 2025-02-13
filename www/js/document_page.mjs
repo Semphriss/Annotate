@@ -96,6 +96,7 @@ export class DocumentPage {
         that.draw();
       }));
 
+      that.adjustSize();
       that.refresh();
     })();
 
@@ -189,7 +190,7 @@ export class DocumentPage {
    * the new dimensions.
    */
   refresh() {
-    this.adjustSize();
+    //this.adjustSize();
 
     if (this.pdfPage) {
       this.pdfPage.autoscale(this.canvas.width);
