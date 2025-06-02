@@ -186,6 +186,21 @@ settings.addEventListener('click', () => {
   renderMenu();
 });
 
+browsepdf.addEventListener('change', async () => {
+      const name = browsepdf.files[0].name.replace(/[^a-z0-9_-]+/gi, '_');
+	alert(name);
+
+      var reader = new FileReader();
+      reader.onload = async (event) => {
+	  alert('tralala');
+          setDocument(await Document.fromPdfData(event.target.result, pages, name));
+          // Necessary to add the entry in the saved files
+          await doc.save();
+
+          pdflist.classList.add('hide');
+      };
+      reader.readAsBinaryString(browsepdf.files[0]);
+});
 loadpdf.addEventListener('click', async () => {
   // WORKAROUND: Canceling does not work in Morph, so to avoid an eternal
   // wait, don't show the loader at all. See commit f23dd07.
