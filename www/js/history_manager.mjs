@@ -1,5 +1,5 @@
 //  Annotate - View and annotate your PDF files
-//  Copyright 2022-2024 Semphris <semphris@semphris.com>
+//  Copyright 2022-2026 Semphris <semphris@semphris.com>
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
