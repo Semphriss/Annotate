@@ -27,6 +27,7 @@ export class DocumentPage {
   /* { width, height } */ baseDims = {};
   /* Element[] */ elements = [];
   /* Element? */ tempElement = null;
+  /* bool */ isInViewport = false;
 
   /**
    * Load a document page from save data.
@@ -158,6 +159,10 @@ export class DocumentPage {
    * supplied in parameter.
    */
   draw(ctx = this.canvas.getContext('2d')) {
+    if (!this.isInViewport) {
+      return;
+    }
+
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     if (this.pdfPage) {
@@ -178,6 +183,10 @@ export class DocumentPage {
    * invoke any redrawing mechanism; usage of refresh() is preferred.
    */
   adjustSize() {
+    if (!this.isInViewport) {
+      return;
+    }
+
     const width = this.canvas.clientWidth * window.devicePixelRatio;
     const baseDims = this.getBaseDims();
 
@@ -190,7 +199,11 @@ export class DocumentPage {
    * the new dimensions.
    */
   refresh() {
-    //this.adjustSize();
+    if (!this.isInViewport) {
+      return;
+    }
+
+    this.adjustSize();
 
     if (this.pdfPage) {
       this.pdfPage.autoscale(this.canvas.width);
@@ -251,7 +264,7 @@ export class DocumentPage {
   }
 
   /**
-   * Adds the corrent page to the PDF-LIB document.
+   * Add the current page to the PDF-LIB document.
    */
   async exportPdf(pdf, originalPdf) {
     let currPage;
@@ -266,6 +279,33 @@ export class DocumentPage {
 
     for (const elem of this.elements) {
       await elem.exportPdf(currPage);
+    }
+  }
+
+  /**
+   * Check whether or not the current page is visible in the viewport. If not,
+   * disable rendering to save resouces.
+   */
+  checkInViewport() {
+    const bbox = this.canvas.getBoundingClientRect();
+    const isIn = !(bbox.bottom <= 0 || bbox.top >= window.innerHeight);;
+    //const isIn = !(bbox.top <= 0 || bbox.bottom >= window.innerHeight);
+
+    if (isIn == this.isInViewport) {
+      return;
+    }
+
+    this.isInViewport = isIn;
+
+    if (!this.isInViewport) {
+      const ctx = this.canvas.getContext('2d');
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      // FIXME: If multiple document pages refer to the same PDF page, flushing
+      // the PDF page here may affect other pages. To be fixed when duplicating
+      // slides and moving them around will be implemented.
+      this.pdfPage.flush();
+    } else {
+      this.refresh();
     }
   }
 }

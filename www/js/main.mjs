@@ -62,6 +62,7 @@ async function openDocument(file) {
 
     loading.classList.add('hide');
     pdflist.classList.add('hide');
+    checkInViewport();
   } catch (e) {
     console.error(e);
     alert('Could not load document: ' + e.toString());
@@ -346,19 +347,31 @@ pages.addEventListener('touchmove', e => {
     currentLen = newLen;
     currentPanMid = currScrollMid;
     pages.style.width = (currentZoom * 100) + 'vw';
-    document.body.parentElement.scrollLeft = newScroll.x;
-    document.body.parentElement.scrollTop = newScroll.y;
+    document.documentElement.scrollLeft = newScroll.x;
+    document.documentElement.scrollTop = newScroll.y;
   }
 });
 
 pages.addEventListener('touchend', e => {
   if (currentLen && e.touches.length < 2) {
     currentLen = null;
-     for (const page of doc.getPages()) {
-       page.refresh();
-     }
+    for (const page of doc.getPages()) {
+      page.refresh();
+    }
   }
 });
+
+function checkInViewport() {
+  if (!doc) {
+    return;
+  }
+
+  for (const page of doc.getPages()) {
+    page.checkInViewport();
+  }
+}
+
+window.addEventListener('scroll', e => void checkInViewport());
 
 // Initialize the app
 showMenu();

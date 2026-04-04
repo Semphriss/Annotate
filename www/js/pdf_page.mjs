@@ -29,6 +29,7 @@ export class PdfPage {
                                 this.notifyRenderReady.bind(this));
   /* function[] */ cbs = [];
   /* bool */ hasRenderedOnce = false;
+  /* bool */ isFlushed = false;
 
   /**
    * Create a new PdfPage with the supplied Pdf document and page index.
@@ -130,5 +131,17 @@ export class PdfPage {
     for (const cb of this.cbs) {
       cb(needsRerun);
     }
+  }
+
+  /**
+   * Delete the cached copy of the page to save memory. The page cant't be
+   * rendered anymore until render() is called.
+   */
+  flush() {
+    this.canvas.width = 1;
+    this.canvas.height = 1;
+    const ctx = this.canvas.getContext('2d');
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.hasRenderedOnce = false;
   }
 }

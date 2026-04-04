@@ -47,7 +47,6 @@ export class TypewriterTool {
   }
 
   endEdit() {
-    window.onscroll = null;
     if (!this.textArea)
       return;
 
